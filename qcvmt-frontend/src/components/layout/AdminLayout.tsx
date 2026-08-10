@@ -1,6 +1,6 @@
 import { Layout, Menu } from 'antd'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { AppHeader } from '@/components/layout/AppHeader'
+import { AppShellLayout } from '@/components/layout/AppShellLayout'
 
 const items = [
   { key: '/admin', label: <Link to="/admin">Dashboard</Link> },
@@ -14,21 +14,25 @@ const items = [
   { key: '/admin/export', label: <Link to="/admin/export">Export</Link> },
 ]
 
+const resolveMenuKey = (pathname: string): string => {
+  const matched =
+    items.find((item) => pathname === item.key || pathname.startsWith(`${item.key}/`))?.key || '/admin'
+  return matched
+}
+
 const AdminLayout = () => {
   const location = useLocation()
 
   return (
-    <Layout className="page-shell">
-      <AppHeader />
-      <Layout className="surface-card" style={{ minHeight: 'calc(100vh - 96px)' }}>
-        <Layout.Sider breakpoint="lg" collapsedWidth="0" width={230} theme="light">
-          <Menu mode="inline" selectedKeys={[location.pathname]} items={items} />
+    <AppShellLayout
+      sider={
+        <Layout.Sider breakpoint="lg" collapsedWidth="0" width={230} theme="light" className="admin-sider">
+          <Menu mode="inline" selectedKeys={[resolveMenuKey(location.pathname)]} items={items} />
         </Layout.Sider>
-        <Layout.Content style={{ padding: 16 }}>
-          <Outlet />
-        </Layout.Content>
-      </Layout>
-    </Layout>
+      }
+    >
+      <Outlet />
+    </AppShellLayout>
   )
 }
 

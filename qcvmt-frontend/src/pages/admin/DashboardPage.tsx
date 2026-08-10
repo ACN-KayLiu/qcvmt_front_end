@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Card, Col, Row, Space, Statistic, Table, Typography, message } from 'antd'
+import { Card, Col, Row, Space, Statistic, Table } from 'antd'
 import { operationLogApi } from '@/api/operationLog'
 import { userApi } from '@/api/user'
 import { vesselApi } from '@/api/vessel'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import type { OperationLogItem } from '@/types/user'
 
 const DashboardPage = () => {
-  const [messageApi, contextHolder] = message.useMessage()
+  const { contextHolder, notifyError } = usePageMessage()
   const [loading, setLoading] = useState(false)
   const [usersTotal, setUsersTotal] = useState(0)
   const [vesselsTotal, setVesselsTotal] = useState(0)
@@ -26,14 +28,14 @@ const DashboardPage = () => {
         setVesselsTotal(vesselRes.data.totalElements)
         setRecentLogs(logRes.data.content)
       } catch (error) {
-        messageApi.error((error as Error).message || 'Failed to load dashboard data')
+        notifyError(error, 'Failed to load dashboard data')
       } finally {
         setLoading(false)
       }
     }
 
     void loadDashboard()
-  }, [messageApi])
+  }, [notifyError])
 
   return (
     <Space direction="vertical" style={{ width: '100%' }} size="middle">
@@ -57,11 +59,11 @@ const DashboardPage = () => {
         </Col>
       </Row>
 
-      <Card loading={loading}>
-        <Typography.Title level={5} style={{ marginTop: 0 }}>
-          Recent Operation Logs
-        </Typography.Title>
-
+      <AdminPageCard
+        title="Recent Operation Logs"
+        subtitle="Latest control-room changes and admin actions."
+        loading={loading}
+      >
         <Table<OperationLogItem>
           rowKey="id"
           dataSource={recentLogs}
@@ -91,7 +93,7 @@ const DashboardPage = () => {
             },
           ]}
         />
-      </Card>
+      </AdminPageCard>
     </Space>
   )
 }

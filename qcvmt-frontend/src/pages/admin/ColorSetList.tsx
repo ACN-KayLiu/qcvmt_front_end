@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Card, Input, Modal, Space, Table, Tag, Typography, message } from 'antd'
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
+import { Button, Space, Table, Tag } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
 import { Link, useNavigate } from 'react-router-dom'
 import { colorSetApi } from '@/api/colorSet'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { PageSearchBar } from '@/components/common/PageSearchBar'
+import { useListQuery } from '@/hooks/useListQuery'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import type { ColorSet } from '@/types/colorSet'
-
-interface QueryState {
-  page: number
-  size: number
-  keyword: string
-}
+import { showDeleteConfirm } from '@/utils/deleteConfirm'
 
 const ColorSetList = () => {
   const navigate = useNavigate()
-  const [messageApi, contextHolder] = message.useMessage()
-  const [query, setQuery] = useState<QueryState>({ page: 1, size: 10, keyword: '' })
-  const [inputKeyword, setInputKeyword] = useState('')
+  const { contextHolder, notifyError, notifySuccess } = usePageMessage()
+  const { query, inputKeyword, setInputKeyword, handleSearch, handlePageChange } = useListQuery()
   const [loading, setLoading] = useState(false)
   const [rows, setRows] = useState<ColorSet[]>([])
   const [total, setTotal] = useState(0)
@@ -31,11 +29,11 @@ const ColorSetList = () => {
       setRows(response.data.content)
       setTotal(response.data.totalElements)
     } catch (error) {
-      messageApi.error((error as Error).message || 'Failed to fetch color sets')
+      notifyError(error, 'Failed to fetch color sets')
     } finally {
       setLoading(false)
     }
-  }, [messageApi, query.keyword, query.page, query.size])
+  }, [notifyError, query.keyword, query.page, query.size])
 
   useEffect(() => {
     void fetchColorSets()
@@ -43,23 +41,16 @@ const ColorSetList = () => {
 
   const handleDelete = useCallback(
     (colorSet: ColorSet) => {
-      Modal.confirm({
+      showDeleteConfirm({
         title: `Delete color set ${colorSet.boxCase}?`,
-        content: 'This action cannot be undone.',
-        okText: 'Delete',
-        okButtonProps: { danger: true },
-        onOk: async () => {
-          try {
-            await colorSetApi.remove(colorSet.id)
-            messageApi.success('Color set deleted')
-            await fetchColorSets()
-          } catch (error) {
-            messageApi.error((error as Error).message || 'Delete failed')
-          }
-        },
+        successMessage: 'Color set deleted',
+        onDelete: () => colorSetApi.remove(colorSet.id),
+        onAfterDelete: fetchColorSets,
+        notifySuccess,
+        notifyError,
       })
     },
-    [fetchColorSets, messageApi],
+    [fetchColorSets, notifyError, notifySuccess],
   )
 
   const columns: ColumnsType<ColorSet> = useMemo(
@@ -99,7 +90,7 @@ const ColorSetList = () => {
         title: 'Actions',
         key: 'actions',
         render: (_, colorSet) => (
-          <Space>
+          <Space className="table-actions" size={8}>
             <Button size="small" onClick={() => navigate(`/admin/color-sets/${colorSet.id}`)}>
               Edit
             </Button>
@@ -113,45 +104,25 @@ const ColorSetList = () => {
     [handleDelete, navigate],
   )
 
-  const handleSearch = () => {
-    setQuery((prev) => ({
-      ...prev,
-      keyword: inputKeyword.trim(),
-      page: 1,
-    }))
-  }
-
-  const handlePageChange = (pagination: TablePaginationConfig) => {
-    setQuery((prev) => ({
-      ...prev,
-      page: pagination.current || 1,
-      size: pagination.pageSize || prev.size,
-    }))
-  }
-
   return (
-    <Card>
+    <>
       {contextHolder}
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Typography.Title level={5} style={{ margin: 0 }}>
-            Color Set Configuration
-          </Typography.Title>
+      <AdminPageCard
+        title="Color Set Configuration"
+        subtitle="Maintain color palettes used by bay planning and container state mapping."
+        extra={
           <Button type="primary">
             <Link to="/admin/color-sets/new">Create Color Set</Link>
           </Button>
-        </Space>
-
-        <Space.Compact style={{ width: '100%' }}>
-          <Input
-            aria-label="Search color sets"
-            placeholder="Search by box case"
-            value={inputKeyword}
-            onChange={(event) => setInputKeyword(event.target.value)}
-            onPressEnter={handleSearch}
-          />
-          <Button onClick={handleSearch}>Search</Button>
-        </Space.Compact>
+        }
+      >
+        <PageSearchBar
+          ariaLabel="Search color sets"
+          placeholder="Search by box case"
+          value={inputKeyword}
+          onChange={setInputKeyword}
+          onSearch={handleSearch}
+        />
 
         <Table<ColorSet>
           rowKey="id"
@@ -167,8 +138,8 @@ const ColorSetList = () => {
           }}
           onChange={handlePageChange}
         />
-      </Space>
-    </Card>
+      </AdminPageCard>
+    </>
   )
 }
 

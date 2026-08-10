@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Button, Card, DatePicker, Form, Space, Typography, message } from 'antd'
+import { Button, DatePicker, Form } from 'antd'
 import { Controller, useForm } from 'react-hook-form'
 import { importExportApi } from '@/api/importExport'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import { exportLogsSchema } from '@/utils/validators'
 
 type ExportFormData = {
@@ -12,7 +14,7 @@ type ExportFormData = {
 }
 
 const ExportPage = () => {
-  const [messageApi, contextHolder] = message.useMessage()
+  const { contextHolder, notifyError, notifySuccess } = usePageMessage()
   const [loading, setLoading] = useState(false)
   const resolver = useMemo(() => zodResolver(exportLogsSchema), [])
 
@@ -51,21 +53,21 @@ const ExportPage = () => {
       anchor.click()
       anchor.remove()
       window.URL.revokeObjectURL(url)
-      messageApi.success('Export started')
+      notifySuccess('Export started')
     } catch (error) {
-      messageApi.error((error as Error).message || 'Export failed')
+      notifyError(error, 'Export failed')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Card>
+    <>
       {contextHolder}
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        <Typography.Title level={5} style={{ margin: 0 }}>
-          Export Operation Logs
-        </Typography.Title>
+      <AdminPageCard
+        title="Export Operation Logs"
+        subtitle="Download operation logs by date range for audits and incident analysis."
+      >
 
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Form.Item
@@ -99,8 +101,8 @@ const ExportPage = () => {
             Export Logs
           </Button>
         </Form>
-      </Space>
-    </Card>
+      </AdminPageCard>
+    </>
   )
 }
 

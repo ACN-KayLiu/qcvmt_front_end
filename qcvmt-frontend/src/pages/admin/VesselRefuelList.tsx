@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Card, Input, Modal, Space, Switch, Table, Tag, Typography, message } from 'antd'
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
+import { Button, Space, Switch, Table, Tag } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
 import { Link, useNavigate } from 'react-router-dom'
 import { vesselRefuelApi } from '@/api/vesselRefuel'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { PageSearchBar } from '@/components/common/PageSearchBar'
+import { useListQuery } from '@/hooks/useListQuery'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import type { VesselRefuelItem } from '@/types/bayConfig'
-
-interface QueryState {
-  page: number
-  size: number
-  keyword: string
-}
+import { showDeleteConfirm } from '@/utils/deleteConfirm'
 
 const VesselRefuelList = () => {
   const navigate = useNavigate()
-  const [messageApi, contextHolder] = message.useMessage()
-  const [query, setQuery] = useState<QueryState>({ page: 1, size: 10, keyword: '' })
-  const [inputKeyword, setInputKeyword] = useState('')
+  const { contextHolder, notifyError, notifySuccess } = usePageMessage()
+  const { query, inputKeyword, setInputKeyword, handleSearch, handlePageChange } = useListQuery()
   const [rows, setRows] = useState<VesselRefuelItem[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -31,11 +29,11 @@ const VesselRefuelList = () => {
       setRows(response.data.content)
       setTotal(response.data.totalElements)
     } catch (error) {
-      messageApi.error((error as Error).message || 'Failed to fetch refuel records')
+      notifyError(error, 'Failed to fetch refuel records')
     } finally {
       setLoading(false)
     }
-  }, [messageApi, query.keyword, query.page, query.size])
+  }, [notifyError, query.keyword, query.page, query.size])
 
   useEffect(() => {
     void fetchRows()
@@ -43,23 +41,16 @@ const VesselRefuelList = () => {
 
   const handleDelete = useCallback(
     (item: VesselRefuelItem) => {
-      Modal.confirm({
+      showDeleteConfirm({
         title: `Delete refuel record for ${item.vesselId}?`,
-        content: 'This action cannot be undone.',
-        okText: 'Delete',
-        okButtonProps: { danger: true },
-        onOk: async () => {
-          try {
-            await vesselRefuelApi.remove(item.id)
-            messageApi.success('Refuel record deleted')
-            await fetchRows()
-          } catch (error) {
-            messageApi.error((error as Error).message || 'Delete failed')
-          }
-        },
+        successMessage: 'Refuel record deleted',
+        onDelete: () => vesselRefuelApi.remove(item.id),
+        onAfterDelete: fetchRows,
+        notifySuccess,
+        notifyError,
       })
     },
-    [fetchRows, messageApi],
+    [fetchRows, notifyError, notifySuccess],
   )
 
   const columns: ColumnsType<VesselRefuelItem> = useMemo(
@@ -80,7 +71,7 @@ const VesselRefuelList = () => {
         title: 'Actions',
         key: 'actions',
         render: (_, row) => (
-          <Space>
+          <Space className="table-actions" size={8}>
             <Button size="small" onClick={() => navigate(`/admin/vessel-refuels/${row.id}`)}>
               Edit
             </Button>
@@ -94,41 +85,25 @@ const VesselRefuelList = () => {
     [handleDelete, navigate],
   )
 
-  const handleSearch = () => {
-    setQuery((prev) => ({ ...prev, keyword: inputKeyword.trim(), page: 1 }))
-  }
-
-  const handlePageChange = (pagination: TablePaginationConfig) => {
-    setQuery((prev) => ({
-      ...prev,
-      page: pagination.current || 1,
-      size: pagination.pageSize || prev.size,
-    }))
-  }
-
   return (
-    <Card>
+    <>
       {contextHolder}
-      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Typography.Title level={5} style={{ margin: 0 }}>
-            Vessel Refuel Status
-          </Typography.Title>
+      <AdminPageCard
+        title="Vessel Refuel Status"
+        subtitle="Track temporary refuel flags and keep dispatch state synchronized."
+        extra={
           <Button type="primary">
             <Link to="/admin/vessel-refuels/new">Create Refuel Record</Link>
           </Button>
-        </Space>
-
-        <Space.Compact style={{ width: '100%' }}>
-          <Input
-            aria-label="Search vessel refuels"
-            placeholder="Search by vessel ID"
-            value={inputKeyword}
-            onChange={(event) => setInputKeyword(event.target.value)}
-            onPressEnter={handleSearch}
-          />
-          <Button onClick={handleSearch}>Search</Button>
-        </Space.Compact>
+        }
+      >
+        <PageSearchBar
+          ariaLabel="Search vessel refuels"
+          placeholder="Search by vessel ID"
+          value={inputKeyword}
+          onChange={setInputKeyword}
+          onSearch={handleSearch}
+        />
 
         <Table<VesselRefuelItem>
           rowKey="id"
@@ -144,8 +119,8 @@ const VesselRefuelList = () => {
           }}
           onChange={handlePageChange}
         />
-      </Space>
-    </Card>
+      </AdminPageCard>
+    </>
   )
 }
 

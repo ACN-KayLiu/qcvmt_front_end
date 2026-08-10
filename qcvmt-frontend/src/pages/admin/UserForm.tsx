@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Card, Form, Input, Select, Space, Typography, message } from 'antd'
+import { Button, Form, Input, Select } from 'antd'
 import { Controller, useForm } from 'react-hook-form'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { userApi } from '@/api/user'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { PageFormActions } from '@/components/common/PageFormActions'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import type { CreateUserRequest, UpdateUserRequest, User } from '@/types/user'
 import { createUserSchema, updateUserSchema } from '@/utils/validators'
 
@@ -24,7 +27,7 @@ const roleOptions = [
 const UserForm = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [messageApi, contextHolder] = message.useMessage()
+  const { contextHolder, notifyError, notifySuccess } = usePageMessage()
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(false)
   const isEdit = Boolean(id)
@@ -68,14 +71,14 @@ const UserForm = () => {
           password: '',
         })
       } catch (error) {
-        messageApi.error((error as Error).message || 'Failed to load user')
+        notifyError(error, 'Failed to load user')
       } finally {
         setFetching(false)
       }
     }
 
     void loadUser()
-  }, [id, isEdit, messageApi, reset])
+  }, [id, isEdit, notifyError, reset])
 
   const onSubmit = async (values: UserFormData) => {
     setLoading(true)
@@ -89,7 +92,7 @@ const UserForm = () => {
           ...(values.password ? { password: values.password } : {}),
         }
         await userApi.update(Number(id), payload)
-        messageApi.success('User updated')
+        notifySuccess('User updated')
       } else {
         const payload: CreateUserRequest = {
           username: values.username,
@@ -99,28 +102,29 @@ const UserForm = () => {
           role: values.role,
         }
         await userApi.create(payload)
-        messageApi.success('User created')
+        notifySuccess('User created')
       }
       navigate('/admin/users')
     } catch (error) {
-      messageApi.error((error as Error).message || 'Submit failed')
+      notifyError(error, 'Submit failed')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Card loading={fetching}>
+    <>
       {contextHolder}
-      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Typography.Title level={5} style={{ margin: 0 }}>
-            {isEdit ? 'Edit User' : 'Create User'}
-          </Typography.Title>
+      <AdminPageCard
+        title={isEdit ? 'Edit User' : 'Create User'}
+        subtitle="Maintain account profile, role and QC assignment."
+        loading={fetching}
+        extra={
           <Button>
             <Link to="/admin/users">Back to List</Link>
           </Button>
-        </Space>
+        }
+      >
 
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Form.Item
@@ -165,15 +169,14 @@ const UserForm = () => {
             />
           </Form.Item>
 
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              {isEdit ? 'Save Changes' : 'Create User'}
-            </Button>
-            <Button onClick={() => navigate('/admin/users')}>Cancel</Button>
-          </Space>
+          <PageFormActions
+            submitText={isEdit ? 'Save Changes' : 'Create User'}
+            loading={loading}
+            onCancel={() => navigate('/admin/users')}
+          />
         </Form>
-      </Space>
-    </Card>
+      </AdminPageCard>
+    </>
   )
 }
 

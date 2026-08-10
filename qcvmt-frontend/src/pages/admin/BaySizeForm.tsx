@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Card, Form, InputNumber, Space, Typography, message } from 'antd'
+import { Form, InputNumber } from 'antd'
 import { Controller, useForm } from 'react-hook-form'
 import { bayConfigApi } from '@/api/bayConfig'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { PageFormActions } from '@/components/common/PageFormActions'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import type { BayConfig } from '@/types/bayConfig'
 import { bayConfigFormSchema } from '@/utils/validators'
 
 const BaySizeForm = () => {
-  const [messageApi, contextHolder] = message.useMessage()
+  const { contextHolder, notifyError, notifySuccess } = usePageMessage()
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(false)
   const resolver = useMemo(() => zodResolver(bayConfigFormSchema), [])
@@ -32,34 +35,35 @@ const BaySizeForm = () => {
         const response = await bayConfigApi.get()
         reset(response.data)
       } catch (error) {
-        messageApi.error((error as Error).message || 'Failed to load bay config')
+        notifyError(error, 'Failed to load bay config')
       } finally {
         setFetching(false)
       }
     }
 
     void loadConfig()
-  }, [messageApi, reset])
+  }, [notifyError, reset])
 
   const onSubmit = async (values: BayConfig) => {
     setLoading(true)
     try {
       await bayConfigApi.update(values)
-      messageApi.success('Bay config saved')
+      notifySuccess('Bay config saved')
     } catch (error) {
-      messageApi.error((error as Error).message || 'Save failed')
+      notifyError(error, 'Save failed')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Card loading={fetching}>
+    <>
       {contextHolder}
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        <Typography.Title level={5} style={{ margin: 0 }}>
-          Bay Size Configuration
-        </Typography.Title>
+      <AdminPageCard
+        title="Bay Size Configuration"
+        subtitle="Configure hold/deck tier boundaries consumed by the bay matrix generator."
+        loading={fetching}
+      >
 
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Form.Item
@@ -100,14 +104,10 @@ const BaySizeForm = () => {
             />
           </Form.Item>
 
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Save
-            </Button>
-          </Space>
+          <PageFormActions submitText="Save" loading={loading} />
         </Form>
-      </Space>
-    </Card>
+      </AdminPageCard>
+    </>
   )
 }
 

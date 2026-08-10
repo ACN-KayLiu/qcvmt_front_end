@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Card, Input, Modal, Space, Table, Tag, Typography, message } from 'antd'
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
+import { Button, Space, Table, Tag } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
 import { Link, useNavigate } from 'react-router-dom'
 import { userApi } from '@/api/user'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { PageSearchBar } from '@/components/common/PageSearchBar'
+import { useListQuery } from '@/hooks/useListQuery'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import type { User } from '@/types/user'
-
-interface QueryState {
-  page: number
-  size: number
-  keyword: string
-}
+import { showDeleteConfirm } from '@/utils/deleteConfirm'
 
 const roleColorMap: Record<User['role'], string> = {
   'qcvmt-admin': 'red',
@@ -19,9 +18,8 @@ const roleColorMap: Record<User['role'], string> = {
 
 const UserList = () => {
   const navigate = useNavigate()
-  const [messageApi, contextHolder] = message.useMessage()
-  const [query, setQuery] = useState<QueryState>({ page: 1, size: 10, keyword: '' })
-  const [inputKeyword, setInputKeyword] = useState('')
+  const { contextHolder, notifyError, notifySuccess } = usePageMessage()
+  const { query, inputKeyword, setInputKeyword, handleSearch, handlePageChange } = useListQuery()
   const [loading, setLoading] = useState(false)
   const [rows, setRows] = useState<User[]>([])
   const [total, setTotal] = useState(0)
@@ -37,33 +35,26 @@ const UserList = () => {
       setRows(response.data.content)
       setTotal(response.data.totalElements)
     } catch (error) {
-      messageApi.error((error as Error).message || 'Failed to fetch users')
+      notifyError(error, 'Failed to fetch users')
     } finally {
       setLoading(false)
     }
-  }, [messageApi, query.keyword, query.page, query.size])
+  }, [notifyError, query.keyword, query.page, query.size])
 
   useEffect(() => {
     void fetchUsers()
   }, [fetchUsers])
 
   const handleDelete = useCallback((user: User) => {
-    Modal.confirm({
+    showDeleteConfirm({
       title: `Delete user ${user.username}?`,
-      content: 'This action cannot be undone.',
-      okText: 'Delete',
-      okButtonProps: { danger: true },
-      onOk: async () => {
-        try {
-          await userApi.remove(user.id)
-          messageApi.success('User deleted')
-          await fetchUsers()
-        } catch (error) {
-          messageApi.error((error as Error).message || 'Delete failed')
-        }
-      },
+      successMessage: 'User deleted',
+      onDelete: () => userApi.remove(user.id),
+      onAfterDelete: fetchUsers,
+      notifySuccess,
+      notifyError,
     })
-  }, [fetchUsers, messageApi])
+  }, [fetchUsers, notifyError, notifySuccess])
 
   const columns: ColumnsType<User> = useMemo(
     () => [
@@ -92,7 +83,7 @@ const UserList = () => {
         title: 'Actions',
         key: 'actions',
         render: (_, user) => (
-          <Space>
+          <Space className="table-actions" size={8}>
             <Button size="small" onClick={() => navigate(`/admin/users/${user.id}`)}>
               Edit
             </Button>
@@ -109,41 +100,25 @@ const UserList = () => {
     [handleDelete, navigate],
   )
 
-  const handlePageChange = (pagination: TablePaginationConfig) => {
-    setQuery((prev) => ({
-      ...prev,
-      page: pagination.current || 1,
-      size: pagination.pageSize || prev.size,
-    }))
-  }
-
-  const handleSearch = () => {
-    setQuery((prev) => ({ ...prev, keyword: inputKeyword.trim(), page: 1 }))
-  }
-
   return (
-    <Card>
+    <>
       {contextHolder}
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Typography.Title level={5} style={{ margin: 0 }}>
-            User Management
-          </Typography.Title>
+      <AdminPageCard
+        title="User Management"
+        subtitle="Manage role assignments and account metadata for control room users."
+        extra={
           <Button type="primary">
             <Link to="/admin/users/new">Create User</Link>
           </Button>
-        </Space>
-
-        <Space.Compact style={{ width: '100%' }}>
-          <Input
-            aria-label="Search users"
-            placeholder="Search by username or name"
-            value={inputKeyword}
-            onChange={(event) => setInputKeyword(event.target.value)}
-            onPressEnter={handleSearch}
-          />
-          <Button onClick={handleSearch}>Search</Button>
-        </Space.Compact>
+        }
+      >
+        <PageSearchBar
+          ariaLabel="Search users"
+          placeholder="Search by username or name"
+          value={inputKeyword}
+          onChange={setInputKeyword}
+          onSearch={handleSearch}
+        />
 
         <Table<User>
           rowKey="id"
@@ -159,8 +134,8 @@ const UserList = () => {
           }}
           onChange={handlePageChange}
         />
-      </Space>
-    </Card>
+      </AdminPageCard>
+    </>
   )
 }
 

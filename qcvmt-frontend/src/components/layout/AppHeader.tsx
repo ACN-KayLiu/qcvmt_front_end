@@ -10,18 +10,11 @@ export const AppHeader = () => {
   const logout = useAuthStore((state) => state.logout)
 
   return (
-    <header
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-      }}
-    >
-      <Typography.Title level={4} style={{ margin: 0 }}>
+    <header className="app-header">
+      <Typography.Title level={4} className="app-header-title">
         {t('app.title')}
       </Typography.Title>
-      <Space>
+      <div className="app-header-actions">
         <Segmented
           size="small"
           options={['en', 'zh-CN', 'zh-TW']}
@@ -35,7 +28,7 @@ export const AppHeader = () => {
         <Button icon={<LogoutOutlined />} onClick={() => void logout()}>
           {t('auth.logout')}
         </Button>
-      </Space>
+      </div>
     </header>
   )
 }

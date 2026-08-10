@@ -34,36 +34,52 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="page-shell" style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
+    <div className="login-page">
       {contextHolder}
-      <Card style={{ width: 'min(100%, 420px)' }}>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <Typography.Title level={3}>QCVMT Login</Typography.Title>
-          <Typography.Paragraph>Please sign in with your account.</Typography.Paragraph>
+      <div className="login-shell">
+        <section className="login-hero">
+          <Typography.Title level={2}>QCVMT Control Suite</Typography.Title>
+          <Typography.Paragraph>
+            Unified terminal operation console for vessel planning, dispatch visibility, and control-room
+            governance.
+          </Typography.Paragraph>
+        </section>
 
-          <Form<LoginFormValues> layout="vertical" onFinish={(values) => void onFinish(values)}>
-            <Form.Item
-              label="Username"
-              name="username"
-              rules={[{ required: true, message: 'Username is required' }]}
-            >
-              <Input autoComplete="username" />
-            </Form.Item>
+        <section className="login-panel">
+          <Card>
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+              <Typography.Title level={3} className="login-title">
+                Sign In
+              </Typography.Title>
+              <Typography.Paragraph className="login-desc" type="secondary">
+                Enter your operational account to continue.
+              </Typography.Paragraph>
 
-            <Form.Item
-              label="Password"
-              name="password"
-              rules={[{ required: true, message: 'Password is required' }]}
-            >
-              <Input.Password autoComplete="current-password" />
-            </Form.Item>
+              <Form<LoginFormValues> layout="vertical" onFinish={(values) => void onFinish(values)}>
+                <Form.Item
+                  label="Username"
+                  name="username"
+                  rules={[{ required: true, message: 'Username is required' }]}
+                >
+                  <Input autoComplete="username" />
+                </Form.Item>
 
-            <Button type="primary" htmlType="submit" loading={submitting} block>
-              Login
-            </Button>
-          </Form>
-        </Space>
-      </Card>
+                <Form.Item
+                  label="Password"
+                  name="password"
+                  rules={[{ required: true, message: 'Password is required' }]}
+                >
+                  <Input.Password autoComplete="current-password" />
+                </Form.Item>
+
+                <Button type="primary" htmlType="submit" loading={submitting} block>
+                  Login
+                </Button>
+              </Form>
+            </Space>
+          </Card>
+        </section>
+      </div>
     </div>
   )
 }

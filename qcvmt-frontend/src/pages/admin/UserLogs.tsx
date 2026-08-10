@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Card, Space, Table, Tag, Typography, message } from 'antd'
+import { Button, Table, Tag } from 'antd'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import { Link, useParams } from 'react-router-dom'
 import { userApi } from '@/api/user'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import type { OperationLogItem } from '@/types/user'
 import { formatDateTime } from '@/utils/format'
 
 const UserLogs = () => {
   const { id } = useParams()
-  const [messageApi, contextHolder] = message.useMessage()
+  const { contextHolder, notifyError } = usePageMessage()
   const [rows, setRows] = useState<OperationLogItem[]>([])
   const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(1)
@@ -29,11 +31,11 @@ const UserLogs = () => {
       setRows(response.data.content)
       setTotal(response.data.totalElements)
     } catch (error) {
-      messageApi.error((error as Error).message || 'Failed to fetch logs')
+      notifyError(error, 'Failed to fetch logs')
     } finally {
       setLoading(false)
     }
-  }, [id, messageApi, page, pageSize])
+  }, [id, notifyError, page, pageSize])
 
   useEffect(() => {
     void fetchLogs()
@@ -73,17 +75,17 @@ const UserLogs = () => {
   }
 
   return (
-    <Card>
+    <>
       {contextHolder}
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Typography.Title level={5} style={{ margin: 0 }}>
-            User Operation Logs
-          </Typography.Title>
+      <AdminPageCard
+        title="User Operation Logs"
+        subtitle="Audit actions performed by the selected user account."
+        extra={
           <Button>
             <Link to="/admin/users">Back to Users</Link>
           </Button>
-        </Space>
+        }
+      >
 
         <Table<OperationLogItem>
           rowKey="id"
@@ -99,8 +101,8 @@ const UserLogs = () => {
           }}
           onChange={handlePageChange}
         />
-      </Space>
-    </Card>
+      </AdminPageCard>
+    </>
   )
 }
 

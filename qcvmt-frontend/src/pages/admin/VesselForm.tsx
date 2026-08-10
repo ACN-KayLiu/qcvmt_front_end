@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Card, Form, Input, InputNumber, Select, Space, Typography, message } from 'antd'
+import { Button, Form, Input, Select } from 'antd'
 import { Controller, useForm } from 'react-hook-form'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { vesselApi } from '@/api/vessel'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { PageFormActions } from '@/components/common/PageFormActions'
+import { RangeNumberFields } from '@/components/common/RangeNumberFields'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import type { CreateVesselRequest, UpdateVesselRequest, Vessel } from '@/types/vessel'
 import { vesselFormSchema } from '@/utils/validators'
 
@@ -27,7 +31,7 @@ const deckHoldOptions = [
 const VesselForm = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [messageApi, contextHolder] = message.useMessage()
+  const { contextHolder, notifyError, notifySuccess } = usePageMessage()
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(false)
   const isEdit = Boolean(id)
@@ -65,14 +69,14 @@ const VesselForm = () => {
         const response = await vesselApi.detail(Number(id))
         reset(response.data)
       } catch (error) {
-        messageApi.error((error as Error).message || 'Failed to load vessel')
+        notifyError(error, 'Failed to load vessel')
       } finally {
         setFetching(false)
       }
     }
 
     void loadVessel()
-  }, [id, isEdit, messageApi, reset])
+  }, [id, isEdit, notifyError, reset])
 
   const onSubmit = async (values: VesselFormData) => {
     setLoading(true)
@@ -80,33 +84,33 @@ const VesselForm = () => {
       if (isEdit && id) {
         const payload: UpdateVesselRequest = values
         await vesselApi.update(Number(id), payload)
-        messageApi.success('Vessel updated')
+        notifySuccess('Vessel updated')
       } else {
         const payload: CreateVesselRequest = values
         await vesselApi.create(payload)
-        messageApi.success('Vessel created')
+        notifySuccess('Vessel created')
       }
       navigate('/admin/vessels')
     } catch (error) {
-      messageApi.error((error as Error).message || 'Submit failed')
+      notifyError(error, 'Submit failed')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Card loading={fetching}>
+    <>
       {contextHolder}
-      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Typography.Title level={5} style={{ margin: 0 }}>
-            {isEdit ? 'Edit Vessel' : 'Create Vessel'}
-          </Typography.Title>
+      <AdminPageCard
+        title={isEdit ? 'Edit Vessel' : 'Create Vessel'}
+        subtitle="Configure vessel identity and operation ranges for planning pipelines."
+        loading={fetching}
+        extra={
           <Button>
             <Link to="/admin/vessels">Back to List</Link>
           </Button>
-        </Space>
-
+        }
+      >
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Form.Item
             label="Vessel ID"
@@ -146,81 +150,16 @@ const VesselForm = () => {
             />
           </Form.Item>
 
-          <Space style={{ width: '100%' }} size="middle" wrap>
-            <Form.Item label="Bay Start" validateStatus={errors.bayStart ? 'error' : ''} help={errors.bayStart?.message}>
-              <Controller
-                name="bayStart"
-                control={control}
-                render={({ field }) => (
-                  <InputNumber value={field.value} min={0} onChange={(value) => field.onChange(value ?? 0)} />
-                )}
-              />
-            </Form.Item>
+          <RangeNumberFields control={control} errors={errors} />
 
-            <Form.Item label="Bay End" validateStatus={errors.bayEnd ? 'error' : ''} help={errors.bayEnd?.message}>
-              <Controller
-                name="bayEnd"
-                control={control}
-                render={({ field }) => (
-                  <InputNumber value={field.value} min={0} onChange={(value) => field.onChange(value ?? 0)} />
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item label="Row Start" validateStatus={errors.rowStart ? 'error' : ''} help={errors.rowStart?.message}>
-              <Controller
-                name="rowStart"
-                control={control}
-                render={({ field }) => (
-                  <InputNumber value={field.value} min={0} onChange={(value) => field.onChange(value ?? 0)} />
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item label="Row End" validateStatus={errors.rowEnd ? 'error' : ''} help={errors.rowEnd?.message}>
-              <Controller
-                name="rowEnd"
-                control={control}
-                render={({ field }) => (
-                  <InputNumber value={field.value} min={0} onChange={(value) => field.onChange(value ?? 0)} />
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Tier Start"
-              validateStatus={errors.tierStart ? 'error' : ''}
-              help={errors.tierStart?.message}
-            >
-              <Controller
-                name="tierStart"
-                control={control}
-                render={({ field }) => (
-                  <InputNumber value={field.value} min={0} onChange={(value) => field.onChange(value ?? 0)} />
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item label="Tier End" validateStatus={errors.tierEnd ? 'error' : ''} help={errors.tierEnd?.message}>
-              <Controller
-                name="tierEnd"
-                control={control}
-                render={({ field }) => (
-                  <InputNumber value={field.value} min={0} onChange={(value) => field.onChange(value ?? 0)} />
-                )}
-              />
-            </Form.Item>
-          </Space>
-
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              {isEdit ? 'Save Changes' : 'Create Vessel'}
-            </Button>
-            <Button onClick={() => navigate('/admin/vessels')}>Cancel</Button>
-          </Space>
+          <PageFormActions
+            submitText={isEdit ? 'Save Changes' : 'Create Vessel'}
+            loading={loading}
+            onCancel={() => navigate('/admin/vessels')}
+          />
         </Form>
-      </Space>
-    </Card>
+      </AdminPageCard>
+    </>
   )
 }
 

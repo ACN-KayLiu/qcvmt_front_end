@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Button, Card, Col, Input, Row, Space, Typography } from 'antd'
 import { BayPlanGrid } from '@/components/bay/BayPlanGrid'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
 import { SignalIndicator } from '@/components/bay/SignalIndicator'
 import { PageState } from '@/components/common/PageState'
 import { usePolling } from '@/hooks/usePolling'
@@ -37,10 +38,12 @@ const TerminalPage = () => {
 
   return (
     <Space direction="vertical" style={{ width: '100%' }} size="middle">
-      <Card>
-        <Space wrap>
+      <AdminPageCard
+        title="Terminal Control"
+        subtitle="Select active crane lane and synchronize bay operation data in real time."
+      >
+        <div className="terminal-toolbar">
           <Input
-            style={{ width: 220 }}
             value={qcInput}
             onChange={(event) => setQcInput(event.target.value)}
             onPressEnter={handleApplyQc}
@@ -54,10 +57,10 @@ const TerminalPage = () => {
             Refresh Now
           </Button>
           <Typography.Text type="secondary">Active: {activeQc}</Typography.Text>
-        </Space>
-      </Card>
+        </div>
+      </AdminPageCard>
 
-      <Row gutter={[16, 16]}>
+      <Row gutter={[16, 16]} className="terminal-metrics">
         <Col xs={24} lg={6}>
           <Card>
             <Typography.Text strong>Signal</Typography.Text>
@@ -85,12 +88,12 @@ const TerminalPage = () => {
       <PageState loading={loading} error={error} isEmpty={!data} />
 
       {data ? (
-        <Card>
-          <Typography.Title level={5} style={{ marginTop: 0 }}>
-            {data.vesselName} - {data.bayName}
-          </Typography.Title>
+        <AdminPageCard
+          title={`${data.vesselName} - ${data.bayName}`}
+          subtitle="Live bay matrix and sequence status for current execution queue."
+        >
           <BayPlanGrid data={data} />
-        </Card>
+        </AdminPageCard>
       ) : null}
     </Space>
   )

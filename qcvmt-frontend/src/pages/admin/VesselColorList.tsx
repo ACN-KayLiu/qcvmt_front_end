@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Card, Input, Modal, Space, Table, Tag, Typography, message } from 'antd'
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
+import { Button, Space, Table, Tag } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
 import { Link, useNavigate } from 'react-router-dom'
 import { vesselColorApi } from '@/api/vesselColor'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { PageSearchBar } from '@/components/common/PageSearchBar'
+import { useListQuery } from '@/hooks/useListQuery'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import type { VesselColorItem } from '@/types/bayConfig'
-
-interface QueryState {
-  page: number
-  size: number
-  keyword: string
-}
+import { showDeleteConfirm } from '@/utils/deleteConfirm'
 
 const VesselColorList = () => {
   const navigate = useNavigate()
-  const [messageApi, contextHolder] = message.useMessage()
-  const [query, setQuery] = useState<QueryState>({ page: 1, size: 10, keyword: '' })
-  const [inputKeyword, setInputKeyword] = useState('')
+  const { contextHolder, notifyError, notifySuccess } = usePageMessage()
+  const { query, inputKeyword, setInputKeyword, handleSearch, handlePageChange } = useListQuery()
   const [rows, setRows] = useState<VesselColorItem[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -31,11 +29,11 @@ const VesselColorList = () => {
       setRows(response.data.content)
       setTotal(response.data.totalElements)
     } catch (error) {
-      messageApi.error((error as Error).message || 'Failed to fetch vessel colors')
+      notifyError(error, 'Failed to fetch vessel colors')
     } finally {
       setLoading(false)
     }
-  }, [messageApi, query.keyword, query.page, query.size])
+  }, [notifyError, query.keyword, query.page, query.size])
 
   useEffect(() => {
     void fetchRows()
@@ -43,23 +41,16 @@ const VesselColorList = () => {
 
   const handleDelete = useCallback(
     (item: VesselColorItem) => {
-      Modal.confirm({
+      showDeleteConfirm({
         title: `Delete vessel color for ${item.vesselId}?`,
-        content: 'This action cannot be undone.',
-        okText: 'Delete',
-        okButtonProps: { danger: true },
-        onOk: async () => {
-          try {
-            await vesselColorApi.remove(item.id)
-            messageApi.success('Vessel color deleted')
-            await fetchRows()
-          } catch (error) {
-            messageApi.error((error as Error).message || 'Delete failed')
-          }
-        },
+        successMessage: 'Vessel color deleted',
+        onDelete: () => vesselColorApi.remove(item.id),
+        onAfterDelete: fetchRows,
+        notifySuccess,
+        notifyError,
       })
     },
-    [fetchRows, messageApi],
+    [fetchRows, notifyError, notifySuccess],
   )
 
   const columns: ColumnsType<VesselColorItem> = useMemo(
@@ -105,7 +96,7 @@ const VesselColorList = () => {
         title: 'Actions',
         key: 'actions',
         render: (_, row) => (
-          <Space>
+          <Space className="table-actions" size={8}>
             <Button size="small" onClick={() => navigate(`/admin/vessel-colors/${row.id}`)}>
               Edit
             </Button>
@@ -119,41 +110,25 @@ const VesselColorList = () => {
     [handleDelete, navigate],
   )
 
-  const handleSearch = () => {
-    setQuery((prev) => ({ ...prev, keyword: inputKeyword.trim(), page: 1 }))
-  }
-
-  const handlePageChange = (pagination: TablePaginationConfig) => {
-    setQuery((prev) => ({
-      ...prev,
-      page: pagination.current || 1,
-      size: pagination.pageSize || prev.size,
-    }))
-  }
-
   return (
-    <Card>
+    <>
       {contextHolder}
-      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Typography.Title level={5} style={{ margin: 0 }}>
-            Vessel Color Configuration
-          </Typography.Title>
+      <AdminPageCard
+        title="Vessel Color Configuration"
+        subtitle="Define color mapping by vessel and bay range for operation visualization."
+        extra={
           <Button type="primary">
             <Link to="/admin/vessel-colors/new">Create Vessel Color</Link>
           </Button>
-        </Space>
-
-        <Space.Compact style={{ width: '100%' }}>
-          <Input
-            aria-label="Search vessel colors"
-            placeholder="Search by vessel ID"
-            value={inputKeyword}
-            onChange={(event) => setInputKeyword(event.target.value)}
-            onPressEnter={handleSearch}
-          />
-          <Button onClick={handleSearch}>Search</Button>
-        </Space.Compact>
+        }
+      >
+        <PageSearchBar
+          ariaLabel="Search vessel colors"
+          placeholder="Search by vessel ID"
+          value={inputKeyword}
+          onChange={setInputKeyword}
+          onSearch={handleSearch}
+        />
 
         <Table<VesselColorItem>
           rowKey="id"
@@ -169,8 +144,8 @@ const VesselColorList = () => {
           }}
           onChange={handlePageChange}
         />
-      </Space>
-    </Card>
+      </AdminPageCard>
+    </>
   )
 }
 

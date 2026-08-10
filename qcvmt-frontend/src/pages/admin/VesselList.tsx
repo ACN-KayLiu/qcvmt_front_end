@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Card, Input, Modal, Space, Table, Tag, Typography, message } from 'antd'
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
+import { Button, Space, Table, Tag } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
 import { Link, useNavigate } from 'react-router-dom'
 import { vesselApi } from '@/api/vessel'
+import { AdminPageCard } from '@/components/common/AdminPageCard'
+import { PageSearchBar } from '@/components/common/PageSearchBar'
+import { useListQuery } from '@/hooks/useListQuery'
+import { usePageMessage } from '@/hooks/usePageMessage'
 import type { Vessel } from '@/types/vessel'
-
-interface QueryState {
-  page: number
-  size: number
-  keyword: string
-}
+import { showDeleteConfirm } from '@/utils/deleteConfirm'
 
 const VesselList = () => {
   const navigate = useNavigate()
-  const [messageApi, contextHolder] = message.useMessage()
-  const [query, setQuery] = useState<QueryState>({ page: 1, size: 10, keyword: '' })
-  const [inputKeyword, setInputKeyword] = useState('')
+  const { contextHolder, notifyError, notifySuccess } = usePageMessage()
+  const { query, inputKeyword, setInputKeyword, handleSearch, handlePageChange } = useListQuery()
   const [loading, setLoading] = useState(false)
   const [rows, setRows] = useState<Vessel[]>([])
   const [total, setTotal] = useState(0)
@@ -31,11 +29,11 @@ const VesselList = () => {
       setRows(response.data.content)
       setTotal(response.data.totalElements)
     } catch (error) {
-      messageApi.error((error as Error).message || 'Failed to fetch vessels')
+      notifyError(error, 'Failed to fetch vessels')
     } finally {
       setLoading(false)
     }
-  }, [messageApi, query.keyword, query.page, query.size])
+  }, [notifyError, query.keyword, query.page, query.size])
 
   useEffect(() => {
     void fetchVessels()
@@ -43,23 +41,16 @@ const VesselList = () => {
 
   const handleDelete = useCallback(
     (vessel: Vessel) => {
-      Modal.confirm({
+      showDeleteConfirm({
         title: `Delete vessel ${vessel.vesselId}?`,
-        content: 'This action cannot be undone.',
-        okText: 'Delete',
-        okButtonProps: { danger: true },
-        onOk: async () => {
-          try {
-            await vesselApi.remove(vessel.id)
-            messageApi.success('Vessel deleted')
-            await fetchVessels()
-          } catch (error) {
-            messageApi.error((error as Error).message || 'Delete failed')
-          }
-        },
+        successMessage: 'Vessel deleted',
+        onDelete: () => vesselApi.remove(vessel.id),
+        onAfterDelete: fetchVessels,
+        notifySuccess,
+        notifyError,
       })
     },
-    [fetchVessels, messageApi],
+    [fetchVessels, notifyError, notifySuccess],
   )
 
   const columns: ColumnsType<Vessel> = useMemo(
@@ -99,7 +90,7 @@ const VesselList = () => {
         title: 'Actions',
         key: 'actions',
         render: (_, vessel) => (
-          <Space>
+          <Space className="table-actions" size={8}>
             <Button size="small" onClick={() => navigate(`/admin/vessels/${vessel.id}`)}>
               Edit
             </Button>
@@ -113,45 +104,25 @@ const VesselList = () => {
     [handleDelete, navigate],
   )
 
-  const handlePageChange = (pagination: TablePaginationConfig) => {
-    setQuery((prev) => ({
-      ...prev,
-      page: pagination.current || 1,
-      size: pagination.pageSize || prev.size,
-    }))
-  }
-
-  const handleSearch = () => {
-    setQuery((prev) => ({
-      ...prev,
-      keyword: inputKeyword.trim(),
-      page: 1,
-    }))
-  }
-
   return (
-    <Card>
+    <>
       {contextHolder}
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Typography.Title level={5} style={{ margin: 0 }}>
-            Vessel Configuration
-          </Typography.Title>
+      <AdminPageCard
+        title="Vessel Configuration"
+        subtitle="Configure vessel profile and bay/row/tier operating ranges."
+        extra={
           <Button type="primary">
             <Link to="/admin/vessels/new">Create Vessel</Link>
           </Button>
-        </Space>
-
-        <Space.Compact style={{ width: '100%' }}>
-          <Input
-            aria-label="Search vessels"
-            placeholder="Search by vessel ID or vessel name"
-            value={inputKeyword}
-            onChange={(event) => setInputKeyword(event.target.value)}
-            onPressEnter={handleSearch}
-          />
-          <Button onClick={handleSearch}>Search</Button>
-        </Space.Compact>
+        }
+      >
+        <PageSearchBar
+          ariaLabel="Search vessels"
+          placeholder="Search by vessel ID or vessel name"
+          value={inputKeyword}
+          onChange={setInputKeyword}
+          onSearch={handleSearch}
+        />
 
         <Table<Vessel>
           rowKey="id"
@@ -167,8 +138,8 @@ const VesselList = () => {
           }}
           onChange={handlePageChange}
         />
-      </Space>
-    </Card>
+      </AdminPageCard>
+    </>
   )
 }
 

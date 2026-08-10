@@ -1,6 +1,10 @@
 .wrapper {
   width: 100%;
   overflow: auto;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg-elevated) 96%, transparent);
+  box-shadow: var(--surface-shadow-soft);
 }
 
 .table {
@@ -10,88 +14,93 @@
 }
 
 .sectionRow td {
-  background: #f0f5f4;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--brand-100) 56%, transparent), color-mix(in srgb, var(--bg-soft) 84%, transparent));
   font-weight: 700;
   text-align: center;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  padding: 6px 8px;
+  border: 1px solid var(--line-soft);
+  padding: 8px 10px;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
 }
 
 .headCell {
-  background: #eef3f2;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  font-size: 11px;
+  background: color-mix(in srgb, var(--bg-soft) 92%, transparent);
+  border: 1px solid var(--line-soft);
+  font-size: 12px;
   text-align: center;
-  padding: 4px;
+  padding: 8px 6px;
   font-weight: 700;
+  color: var(--text-secondary);
 }
 
 .tierCell {
-  background: #f9fbfb;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  font-size: 11px;
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+  border: 1px solid var(--line-soft);
+  font-size: 12px;
   text-align: center;
-  padding: 4px;
+  padding: 7px 6px;
   font-weight: 700;
   width: 56px;
+  color: var(--text-secondary);
 }
 
 .cell {
-  min-height: 34px;
+  min-height: 36px;
   min-width: 44px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid color-mix(in srgb, var(--line-strong) 80%, transparent);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 2px 4px;
+  padding: 3px 4px;
   box-sizing: border-box;
+  color: var(--text-primary);
 }
 
 .inactive {
-  background: #bfc9c7;
+  background: #ced8dc;
 }
 
 .unable {
-  background: #818f8d;
+  background: #71818b;
   color: white;
 }
 
 .empty {
-  background: #f5f8f7;
+  background: color-mix(in srgb, var(--bg-soft) 92%, transparent);
 }
 
 .discharge {
-  background: #c9f0dd;
+  background: #cfeedd;
 }
 
 .load {
-  background: #ffe7c6;
+  background: #ffe9cf;
 }
 
 .complexunit {
-  background: #ffe4ee;
+  background: #ffe5ef;
 }
 
 .twenty {
-  background: #f3d7d7;
-  color: #bb0000;
+  background: #f7dedf;
+  color: #a62330;
 }
 
 .refuel {
-  background: #ffc5c5;
-  color: #bb0000;
+  background: #ffd2d4;
+  color: #a62330;
 }
 
 .dg {
   position: absolute;
-  top: 1px;
-  right: 1px;
-  background: #ffdf6f;
-  color: #b90000;
+  top: 2px;
+  right: 2px;
+  background: #ffe7a3;
+  color: #8c3c00;
   font-size: 9px;
   padding: 0 3px;
-  border-radius: 2px;
+  border-radius: 4px;
 }
