@@ -1,0 +1,49 @@
+:root {
+  --bg-0: #e8f4f1;
+  --bg-1: #f7fbfa;
+  --text-0: #0d2f2a;
+  --text-1: #365a55;
+  --card: #ffffff;
+  --line: #d3e5e1;
+  --accent: #0a6a55;
+}
+
+:root[data-theme='dark'] {
+  --bg-0: #081612;
+  --bg-1: #0f2520;
+  --text-0: #e6f3f1;
+  --text-1: #b8d5d0;
+  --card: #132f28;
+  --line: #23483f;
+  --accent: #4ac8a5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: radial-gradient(circle at top right, var(--bg-1), var(--bg-0));
+  color: var(--text-0);
+}
+
+a {
+  color: inherit;
+}
+
+.page-shell {
+  padding: 16px;
+}
+
+.surface-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}

@@ -1,0 +1,97 @@
+.wrapper {
+  width: 100%;
+  overflow: auto;
+}
+
+.table {
+  border-collapse: collapse;
+  min-width: 720px;
+  width: 100%;
+}
+
+.sectionRow td {
+  background: #f0f5f4;
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 6px 8px;
+}
+
+.headCell {
+  background: #eef3f2;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  font-size: 11px;
+  text-align: center;
+  padding: 4px;
+  font-weight: 700;
+}
+
+.tierCell {
+  background: #f9fbfb;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  font-size: 11px;
+  text-align: center;
+  padding: 4px;
+  font-weight: 700;
+  width: 56px;
+}
+
+.cell {
+  min-height: 34px;
+  min-width: 44px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 2px 4px;
+  box-sizing: border-box;
+}
+
+.inactive {
+  background: #bfc9c7;
+}
+
+.unable {
+  background: #818f8d;
+  color: white;
+}
+
+.empty {
+  background: #f5f8f7;
+}
+
+.discharge {
+  background: #c9f0dd;
+}
+
+.load {
+  background: #ffe7c6;
+}
+
+.complexunit {
+  background: #ffe4ee;
+}
+
+.twenty {
+  background: #f3d7d7;
+  color: #bb0000;
+}
+
+.refuel {
+  background: #ffc5c5;
+  color: #bb0000;
+}
+
+.dg {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  background: #ffdf6f;
+  color: #b90000;
+  font-size: 9px;
+  padding: 0 3px;
+  border-radius: 2px;
+}

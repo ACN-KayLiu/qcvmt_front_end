@@ -1,0 +1,12 @@
+{
+  "app.title": "QCVMT 前端",
+  "nav.terminal": "终端页",
+  "nav.dashboard": "管理首页",
+  "auth.login": "登录",
+  "auth.logout": "退出登录",
+  "terminal.signal.green": "连接正常",
+  "terminal.signal.red": "连接异常",
+  "state.loading": "加载中...",
+  "state.empty": "暂无数据",
+  "state.error": "系统发生错误"
+}

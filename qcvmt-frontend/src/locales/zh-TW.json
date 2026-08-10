@@ -1,0 +1,12 @@
+{
+  "app.title": "QCVMT 前端",
+  "nav.terminal": "終端頁",
+  "nav.dashboard": "管理首頁",
+  "auth.login": "登入",
+  "auth.logout": "登出",
+  "terminal.signal.green": "連線正常",
+  "terminal.signal.red": "連線異常",
+  "state.loading": "載入中...",
+  "state.empty": "暫無資料",
+  "state.error": "系統發生錯誤"
+}

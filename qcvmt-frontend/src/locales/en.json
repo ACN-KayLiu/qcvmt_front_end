@@ -1,0 +1,12 @@
+{
+  "app.title": "QCVMT Frontend",
+  "nav.terminal": "Terminal",
+  "nav.dashboard": "Dashboard",
+  "auth.login": "Login",
+  "auth.logout": "Logout",
+  "terminal.signal.green": "Connected",
+  "terminal.signal.red": "Disconnected",
+  "state.loading": "Loading...",
+  "state.empty": "No data",
+  "state.error": "Something went wrong"
+}
