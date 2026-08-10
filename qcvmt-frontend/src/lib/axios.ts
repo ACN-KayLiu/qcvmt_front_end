@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios'
+import { clearAuthTokens, getStoredAuthTokens } from '@/api/auth'
 import { BusinessError } from '@/lib/errors'
 import { withRetry } from '@/utils/retry'
 import { SUCCESS_CODE, type ApiResponse } from '@/api/types'
@@ -13,6 +14,10 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(async (config) => {
   const headers = new AxiosHeaders(config.headers)
+  const tokens = getStoredAuthTokens()
+  if (tokens?.accessToken) {
+    headers.set('Authorization', `${tokens.tokenType} ${tokens.accessToken}`)
+  }
   config.headers = headers
   return config
 })
@@ -33,9 +38,7 @@ apiClient.interceptors.response.use(
     const status = error.response?.status
 
     if (status === 401) {
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
-      }
+      clearAuthTokens()
     }
 
     if (status === 403) {

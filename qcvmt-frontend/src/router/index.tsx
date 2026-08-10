@@ -6,6 +6,7 @@ import { AuthGuard } from '@/components/common/AuthGuard'
 const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'))
 const TerminalLayout = lazy(() => import('@/components/layout/TerminalLayout'))
 const TerminalPage = lazy(() => import('@/pages/terminal/TerminalPage'))
+const LoginPage = lazy(() => import('@/pages/login/LoginPage'))
 const DashboardPage = lazy(() => import('@/pages/admin/DashboardPage'))
 const UserList = lazy(() => import('@/pages/admin/UserList'))
 const UserForm = lazy(() => import('@/pages/admin/UserForm'))
@@ -31,7 +32,7 @@ const withSuspense = (Component: ComponentType): JSX.Element => (
 export const router = createBrowserRouter([
   {
     path: '/login',
-    element: <Navigate to="/terminal" replace />,
+    element: withSuspense(LoginPage),
   },
   {
     path: '/',
