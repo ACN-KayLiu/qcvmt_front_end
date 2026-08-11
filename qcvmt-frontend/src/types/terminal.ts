@@ -7,6 +7,7 @@ export interface SequenceVO {
   tier: string
   type: 'inactive' | 'unable' | 'empty' | 'discharge' | 'load' | 'complexunit' | 'twenty' | 'refuel'
   isDg?: boolean
+  isCurrent?: boolean
   text?: string
 }
 

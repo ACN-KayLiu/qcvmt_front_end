@@ -1,10 +1,6 @@
 .wrapper {
   width: 100%;
-  overflow: auto;
-  border: 1px solid var(--line-soft);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--bg-elevated) 96%, transparent);
-  box-shadow: var(--surface-shadow-soft);
+  /* card chrome removed — terminal-bay-panel provides the container */
 }
 
 .table {
@@ -13,94 +9,237 @@
   width: 100%;
 }
 
+/* Crane spreader row — sits above column headers */
+.craneRow td {
+  padding: 4px 0 2px;
+  text-align: center;
+  border: none;
+  background: transparent;
+  vertical-align: bottom;
+}
+
+.craneIndicator {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--brand-500);
+  animation: craneBob 2s ease-in-out infinite;
+}
+
+@keyframes craneBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .craneIndicator { animation: none; }
+}
+
+/* Hold / Deck section dividers */
 .sectionRow td {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--brand-100) 56%, transparent), color-mix(in srgb, var(--bg-soft) 84%, transparent));
-  font-weight: 700;
-  text-align: center;
+  background: color-mix(in srgb, var(--brand-100) 48%, var(--bg-soft) 52%);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
   border: 1px solid var(--line-soft);
-  padding: 8px 10px;
-  color: var(--text-primary);
-  letter-spacing: 0.03em;
+  padding: 6px 14px;
+  color: var(--text-secondary);
 }
 
+/* Row column headers (02, 04, 06…) */
 .headCell {
-  background: color-mix(in srgb, var(--bg-soft) 92%, transparent);
+  background: color-mix(in srgb, var(--bg-soft) 95%, transparent);
   border: 1px solid var(--line-soft);
-  font-size: 12px;
-  text-align: center;
-  padding: 8px 6px;
+  font-size: 13px;
   font-weight: 700;
+  text-align: center;
+  padding: 10px 6px;
   color: var(--text-secondary);
+  min-width: 80px;
 }
 
+/* Tier label column */
 .tierCell {
-  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+  background: var(--bg-elevated);
   border: 1px solid var(--line-soft);
   font-size: 12px;
-  text-align: center;
-  padding: 7px 6px;
   font-weight: 700;
-  width: 56px;
+  text-align: center;
+  padding: 8px;
+  width: 58px;
   color: var(--text-secondary);
 }
 
+/* Base bay cell — sized for large-screen legibility */
 .cell {
-  min-height: 36px;
-  min-width: 44px;
-  border: 1px solid color-mix(in srgb, var(--line-strong) 80%, transparent);
-  font-size: 11px;
-  font-weight: 600;
+  min-height: 54px;
+  min-width: 80px;
+  border: 1px solid color-mix(in srgb, var(--line-strong) 55%, transparent);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 3px 4px;
+  padding: 6px;
   box-sizing: border-box;
-  color: var(--text-primary);
+  gap: 1px;
+  transition: box-shadow 0.15s;
 }
 
+.cellText {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1.15;
+}
+
+/* ── Cell type fills — bold solid colors for distance readability ────── */
+
 .inactive {
-  background: #ced8dc;
+  background: #dde5ea;
+  color: #8fa3af;
 }
 
 .unable {
-  background: #71818b;
-  color: white;
+  background: #374151;
+  color: #6b7280;
 }
 
 .empty {
-  background: color-mix(in srgb, var(--bg-soft) 92%, transparent);
+  background: color-mix(in srgb, var(--bg-soft) 88%, transparent);
+  color: #b0bec5;
 }
 
 .discharge {
-  background: #cfeedd;
+  background: #16a34a;
+  color: #ffffff;
 }
 
 .load {
-  background: #ffe9cf;
+  background: #ea580c;
+  color: #ffffff;
 }
 
 .complexunit {
-  background: #ffe5ef;
+  background: #7c3aed;
+  color: #ffffff;
 }
 
 .twenty {
-  background: #f7dedf;
-  color: #a62330;
+  background: #dc2626;
+  color: #ffffff;
 }
 
 .refuel {
-  background: #ffd2d4;
-  color: #a62330;
+  background: #d97706;
+  color: #ffffff;
 }
 
+/* ── Active crane position ───────────────────────────────────────────── */
+
+.current {
+  box-shadow: inset 0 0 0 3px var(--brand-500), 0 0 18px rgba(15, 122, 99, 0.45);
+  animation: cranePulse 1.8s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes cranePulse {
+  0%, 100% {
+    box-shadow: inset 0 0 0 3px var(--brand-500), 0 0 8px rgba(15, 122, 99, 0.3);
+  }
+  50% {
+    box-shadow: inset 0 0 0 3px var(--brand-500), 0 0 28px rgba(15, 122, 99, 0.75);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current {
+    animation: none;
+    box-shadow: inset 0 0 0 3px var(--brand-500);
+  }
+}
+
+/* Blinking dot signals live work on this cell */
+.currentDot {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 7px rgba(255, 255, 255, 0.85);
+  animation: dotBlink 1.8s ease-in-out infinite;
+}
+
+@keyframes dotBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .currentDot { animation: none; }
+}
+
+/* DG (Dangerous Goods) corner badge */
 .dg {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  background: #ffe7a3;
-  color: #8c3c00;
-  font-size: 9px;
-  padding: 0 3px;
-  border-radius: 4px;
+  top: 3px;
+  right: 3px;
+  background: #fef08a;
+  color: #92400e;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+}
+
+/* ── Color legend ────────────────────────────────────────────────────── */
+
+.legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding: 11px 16px;
+  border-top: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--bg-soft) 70%, transparent);
+  border-radius: 0;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* Swatch inherits background from the cell-type class (e.g. .discharge) */
+.legendSwatch {
+  display: inline-block;
+  width: 22px;
+  height: 13px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+/* ── Dark mode overrides for light-only fills ────────────────────────── */
+
+:global([data-theme='dark']) .inactive {
+  background: #293a47;
+  color: #4a6070;
+}
+
+:global([data-theme='dark']) .empty {
+  background: color-mix(in srgb, var(--bg-soft) 95%, transparent);
+  color: #374f5e;
 }

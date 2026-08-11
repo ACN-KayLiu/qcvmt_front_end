@@ -1,12 +1,26 @@
-import { BulbOutlined, LogoutOutlined } from '@ant-design/icons'
-import { Button, Segmented, Space, Typography } from 'antd'
+import { DownOutlined, GlobalOutlined, LogoutOutlined, MoonOutlined, SunOutlined } from '@ant-design/icons'
+import { Button, Dropdown, Typography } from 'antd'
+import type { MenuProps } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
 
+const LANG_LABELS: Record<string, string> = {
+  en: 'English',
+  'zh-CN': '简体中文',
+  'zh-TW': '繁體中文',
+}
+
+const LANG_SHORT: Record<string, string> = {
+  en: 'EN',
+  'zh-CN': '简',
+  'zh-TW': '繁',
+}
+
 export const AppHeader = () => {
   const { t, i18n } = useTranslation()
   const toggleTheme = useAppStore((state) => state.toggleTheme)
+  const themeMode = useAppStore((state) => state.themeMode)
   const logout = useAuthStore((state) => state.logout)
 
   return (
@@ -15,16 +29,24 @@ export const AppHeader = () => {
         {t('app.title')}
       </Typography.Title>
       <div className="app-header-actions">
-        <Segmented
-          size="small"
-          options={['en', 'zh-CN', 'zh-TW']}
-          value={i18n.language}
-          onChange={(value) => {
-            void i18n.changeLanguage(String(value))
-          }}
-          aria-label="Language switcher"
+        <Dropdown
+          menu={{
+            selectedKeys: [i18n.language],
+            items: Object.entries(LANG_LABELS).map(([key, label]) => ({ key, label })),
+            onClick: ({ key }) => void i18n.changeLanguage(key),
+          } satisfies MenuProps}
+          trigger={['click']}
+        >
+          <Button icon={<GlobalOutlined />}>
+            {LANG_SHORT[i18n.language] ?? i18n.language}
+            <DownOutlined style={{ fontSize: 10, opacity: 0.5, marginLeft: 2 }} />
+          </Button>
+        </Dropdown>
+        <Button
+          icon={themeMode === 'dark' ? <SunOutlined /> : <MoonOutlined />}
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
         />
-        <Button icon={<BulbOutlined />} onClick={toggleTheme} aria-label="Toggle theme" />
         <Button icon={<LogoutOutlined />} onClick={() => void logout()}>
           {t('auth.logout')}
         </Button>

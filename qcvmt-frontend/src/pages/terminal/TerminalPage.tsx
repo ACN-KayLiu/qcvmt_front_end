@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Button, Card, Col, Input, Row, Space, Typography } from 'antd'
+import { Button, Input } from 'antd'
 import { BayPlanGrid } from '@/components/bay/BayPlanGrid'
 import { AdminPageCard } from '@/components/common/AdminPageCard'
 import { SignalIndicator } from '@/components/bay/SignalIndicator'
@@ -7,6 +7,7 @@ import { PageState } from '@/components/common/PageState'
 import { usePolling } from '@/hooks/usePolling'
 import { useServerClock } from '@/hooks/useServerClock'
 import { useTerminalStore } from '@/stores/terminal'
+import { MOCK_TERMINAL_DATA } from '@/utils/mockTerminalData'
 
 const DEFAULT_QC = 'QC01'
 
@@ -18,85 +19,80 @@ const TerminalPage = () => {
   const error = useTerminalStore((state) => state.error)
   const signalStatus = useTerminalStore((state) => state.signalStatus)
   const fetchTerminalData = useTerminalStore((state) => state.fetchTerminalData)
+  const setData = useTerminalStore((state) => state.setData)
   const polling = usePolling(activeQc)
   const clock = useServerClock(data?.serverDateTime)
   const normalizedQc = useMemo(() => qcInput.trim().toUpperCase(), [qcInput])
 
   const handleApplyQc = () => {
-    if (!normalizedQc) {
-      return
-    }
+    if (!normalizedQc) return
     setActiveQc(normalizedQc)
   }
 
   const handleRefresh = async () => {
-    if (!activeQc) {
-      return
-    }
+    if (!activeQc) return
     await fetchTerminalData(activeQc)
   }
 
+  const cardTitle = data ? `${data.vesselName} — Bay ${data.bayName}` : 'Terminal'
+
+  const cardExtra = data ? (
+    <div className="terminal-context">
+      {data.voyage ? <span className="bay-chip">{data.voyage}</span> : null}
+      <span className="bay-chip">QC {data.qcAct}</span>
+    </div>
+  ) : null
+
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
-      <AdminPageCard
-        title="Terminal Control"
-        subtitle="Select active crane lane and synchronize bay operation data in real time."
-      >
-        <div className="terminal-toolbar">
+    <AdminPageCard title={cardTitle} extra={cardExtra}>
+      <div className="terminal-controls">
+        <div className="terminal-controls-status">
+          {data ? (
+            <>
+              <span className="tsr-sep" aria-hidden="true" />
+            </>
+          ) : null}
+          <SignalIndicator status={signalStatus} />
+          {data ? (
+            <>
+              <span className="tsr-sep" aria-hidden="true" />
+              <span className="tsr-item">
+                <span className="tsr-label">Clock</span>
+                {clock.dateTime}
+              </span>
+              <span className="tsr-sep" aria-hidden="true" />
+              <span className="tsr-item">
+                <span className="tsr-label">Poll</span>
+                {polling.intervalMs / 1000}s{polling.running ? '' : ' (paused)'}
+              </span>
+            </>
+          ) : null}
+        </div>
+        <div className="terminal-controls-actions">
           <Input
             value={qcInput}
             onChange={(event) => setQcInput(event.target.value)}
             onPressEnter={handleApplyQc}
-            placeholder="Input QC number, e.g. QC01"
+            placeholder="QC number"
             aria-label="QC number"
           />
           <Button type="primary" onClick={handleApplyQc}>
             Apply
           </Button>
           <Button onClick={() => void handleRefresh()} loading={loading}>
-            Refresh Now
+            Refresh
           </Button>
-          <Typography.Text type="secondary">Active: {activeQc}</Typography.Text>
+          <Button type="dashed" onClick={() => setData(MOCK_TERMINAL_DATA)}>
+            Demo
+          </Button>
         </div>
-      </AdminPageCard>
-
-      <Row gutter={[16, 16]} className="terminal-metrics">
-        <Col xs={24} lg={6}>
-          <Card>
-            <Typography.Text strong>Signal</Typography.Text>
-            <div style={{ marginTop: 8 }}>
-              <SignalIndicator status={signalStatus} />
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} lg={6}>
-          <Card>
-            <Typography.Text strong>Server Time</Typography.Text>
-            <div style={{ marginTop: 8 }}>{clock.dateTime}</div>
-          </Card>
-        </Col>
-        <Col xs={24} lg={12}>
-          <Card>
-            <Typography.Text strong>Polling Interval</Typography.Text>
-            <div style={{ marginTop: 8 }}>
-              {polling.intervalMs / 1000}s {polling.running ? '(running)' : '(stopped)'}
-            </div>
-          </Card>
-        </Col>
-      </Row>
+      </div>
 
       <PageState loading={loading} error={error} isEmpty={!data} />
-
-      {data ? (
-        <AdminPageCard
-          title={`${data.vesselName} - ${data.bayName}`}
-          subtitle="Live bay matrix and sequence status for current execution queue."
-        >
-          <BayPlanGrid data={data} />
-        </AdminPageCard>
-      ) : null}
-    </Space>
+      {data ? <BayPlanGrid data={data} /> : null}
+    </AdminPageCard>
   )
 }
 
 export default TerminalPage
+

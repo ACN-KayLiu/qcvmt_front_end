@@ -13,6 +13,30 @@ const toInt = (value: string): number => {
 
 const formatTierLabel = (tier: number): string => String(tier).padStart(2, '0')
 
+const LEGEND = [
+  { type: 'discharge', label: 'Discharge' },
+  { type: 'load', label: 'Load' },
+  { type: 'empty', label: 'Empty' },
+  { type: 'inactive', label: 'Inactive' },
+  { type: 'unable', label: 'Unable' },
+  { type: 'complexunit', label: 'Complex' },
+  { type: 'twenty', label: '20 FT' },
+  { type: 'refuel', label: 'Refuel' },
+] as const
+
+/** Spreader beam icon — bobs above the active crane column. */
+const CraneIndicator = () => (
+  <span className={styles.craneIndicator} title="QC crane position">
+    <svg width="34" height="22" viewBox="0 0 34 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="17" y1="0" x2="17" y2="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <rect x="2" y="10" width="30" height="5" rx="2" fill="currentColor" />
+      <line x1="7"  y1="15" x2="7"  y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <line x1="17" y1="15" x2="17" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <line x1="27" y1="15" x2="27" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  </span>
+)
+
 export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
   const sequenceMap = new Map<string, (typeof data.sequences)[number]>()
 
@@ -52,6 +76,9 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
   const tiersForHold = holdTiers.length > 0 ? holdTiers : fallbackHold
   const tiersForDeck = deckTiers
 
+  const currentSequence = data.sequences.find((s) => s.isCurrent)
+  const currentRow = currentSequence ? toInt(currentSequence.row) : null
+
   const renderTierRows = (tiers: number[]) => {
     return tiers
       .slice()
@@ -64,7 +91,7 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
             const sequence = sequenceMap.get(key)
             return (
               <td key={key}>
-                <BayCell item={sequence} type={sequence?.type || 'empty'} text={sequence?.text || ''} />
+                <BayCell item={sequence} type={sequence?.type ?? 'empty'} text={sequence?.text ?? ''} />
               </td>
             )
           })}
@@ -76,6 +103,14 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
     <div className={styles.wrapper} role="grid" aria-label="Bay plan grid">
       <table className={styles.table}>
         <thead>
+          {currentRow !== null ? (
+            <tr className={styles.craneRow} aria-hidden="true">
+              <td />
+              {rows.map((row) => (
+                <td key={`crane-${row}`}>{row === currentRow ? <CraneIndicator /> : null}</td>
+              ))}
+            </tr>
+          ) : null}
           <tr>
             <th className={styles.headCell}>Tier</th>
             {rows.map((row) => (
@@ -102,6 +137,16 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
           ) : null}
         </tbody>
       </table>
+
+      <div className={styles.legend} aria-label="Cell type legend">
+        {LEGEND.map(({ type, label }) => (
+          <div key={type} className={styles.legendItem}>
+            <span className={`${styles.legendSwatch} ${styles[type]}`} />
+            <span>{label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
+

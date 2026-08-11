@@ -198,21 +198,95 @@ a {
   border-inline-end: none !important;
 }
 
-.terminal-toolbar {
-  display: grid;
-  grid-template-columns: minmax(180px, 240px) auto auto 1fr;
+.terminal-view {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
+}
+
+.terminal-vessel {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.terminal-bay-area {
+  flex: 1;
+  min-height: 0;
+}
+
+.terminal-controls {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 
-.terminal-metrics .ant-card {
-  border-radius: 14px !important;
-  border: 1px solid var(--line-soft) !important;
+.terminal-controls-status {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  min-width: 0;
 }
 
-.terminal-main-title {
-  margin-top: 0 !important;
-  margin-bottom: 12px !important;
+.terminal-controls-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.terminal-controls-actions .ant-input {
+  width: 140px;
+}
+
+.terminal-context {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bay-chip {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--bg-soft) 75%, transparent);
+  border: 1px solid var(--line-soft);
+  border-radius: 5px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+/* Status rail tokens — used inside .terminal-controls-status */
+.tsr-sep {
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: var(--line-strong);
+  margin: 0 14px;
+  flex-shrink: 0;
+}
+
+.tsr-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.tsr-label {
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
 }
 
 .route-page {
@@ -255,7 +329,30 @@ a {
     radial-gradient(560px 260px at 0% 0%, rgba(15, 122, 99, 0.22), transparent 68%),
     radial-gradient(480px 220px at 100% 100%, rgba(72, 148, 222, 0.16), transparent 70%),
     linear-gradient(160deg, color-mix(in srgb, var(--bg-elevated) 88%, var(--brand-100)), color-mix(in srgb, var(--bg-elevated) 92%, transparent));
+  display: flex;
+  flex-direction: column;
 }
+
+.login-crane {
+  margin-top: auto;
+  padding-top: 24px;
+  opacity: 0.72;
+}
+
+.login-crane svg {
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  display: block;
+}
+
+.crane-main { fill: var(--brand-500); }
+.crane-dark { fill: var(--brand-600); }
+.crane-light { fill: var(--brand-100); }
+.crane-chip { fill: color-mix(in srgb, var(--brand-100) 65%, var(--info-100) 35%); }
+.crane-lifted { fill: var(--brand-500); opacity: 0.55; }
+.crane-rope { stroke: var(--text-secondary); fill: none; }
+.crane-sea { stroke: var(--line-strong); fill: none; }
 
 .login-hero h2 {
   margin: 0;
@@ -322,10 +419,6 @@ a {
 }
 
 @media (max-width: 1080px) {
-  .terminal-toolbar {
-    grid-template-columns: 1fr 1fr;
-  }
-
   .login-shell {
     grid-template-columns: 1fr;
   }
@@ -390,8 +483,17 @@ a {
     flex-wrap: wrap;
   }
 
-  .terminal-toolbar {
-    grid-template-columns: 1fr;
+  .terminal-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .terminal-controls-actions {
+    flex-wrap: wrap;
+  }
+
+  .terminal-controls-actions .ant-input {
+    width: 100%;
   }
 
   .login-panel {

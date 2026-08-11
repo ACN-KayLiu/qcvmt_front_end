@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, Col, Row, Space, Statistic, Table } from 'antd'
+import { Col, Row, Space, Statistic, Table } from 'antd'
 import { operationLogApi } from '@/api/operationLog'
 import { userApi } from '@/api/user'
 import { vesselApi } from '@/api/vessel'
@@ -41,23 +41,19 @@ const DashboardPage = () => {
     <Space direction="vertical" style={{ width: '100%' }} size="middle">
       {contextHolder}
 
-      <Row gutter={[16, 16]}>
-        <Col xs={24} md={8}>
-          <Card loading={loading}>
+      <AdminPageCard title="System Status" loading={loading}>
+        <Row gutter={[32, 16]}>
+          <Col xs={24} sm={8}>
             <Statistic title="Users" value={usersTotal} />
-          </Card>
-        </Col>
-        <Col xs={24} md={8}>
-          <Card loading={loading}>
+          </Col>
+          <Col xs={24} sm={8}>
             <Statistic title="Vessels" value={vesselsTotal} />
-          </Card>
-        </Col>
-        <Col xs={24} md={8}>
-          <Card loading={loading}>
+          </Col>
+          <Col xs={24} sm={8}>
             <Statistic title="Recent Operations" value={recentLogs.length} />
-          </Card>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </AdminPageCard>
 
       <AdminPageCard
         title="Recent Operation Logs"

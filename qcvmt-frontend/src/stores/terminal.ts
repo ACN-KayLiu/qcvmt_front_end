@@ -8,6 +8,7 @@ interface TerminalState {
   polling: PollingState
   loading: boolean
   error: string | null
+  setData: (data: TerminalView) => void
   setPolling: (next: Partial<PollingState>) => void
   fetchTerminalData: (qcNum: string, signal?: AbortSignal) => Promise<void>
 }
@@ -18,6 +19,7 @@ export const useTerminalStore = create<TerminalState>((set) => ({
   polling: { intervalMs: 15_000, timeoutCount: 0, running: false },
   loading: false,
   error: null,
+  setData: (data) => set({ data, signalStatus: 'green', loading: false, error: null }),
   setPolling: (next) =>
     set((state) => ({
       polling: {
