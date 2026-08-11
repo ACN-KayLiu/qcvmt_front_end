@@ -9,6 +9,7 @@ interface TerminalState {
   loading: boolean
   error: string | null
   setData: (data: TerminalView) => void
+  clearData: () => void
   setPolling: (next: Partial<PollingState>) => void
   fetchTerminalData: (qcNum: string, signal?: AbortSignal) => Promise<void>
 }
@@ -20,6 +21,7 @@ export const useTerminalStore = create<TerminalState>((set) => ({
   loading: false,
   error: null,
   setData: (data) => set({ data, signalStatus: 'green', loading: false, error: null }),
+  clearData: () => set({ data: null, signalStatus: 'red', loading: false, error: null }),
   setPolling: (next) =>
     set((state) => ({
       polling: {
@@ -28,6 +30,14 @@ export const useTerminalStore = create<TerminalState>((set) => ({
       },
     })),
   fetchTerminalData: async (qcNum, signal) => {
+    if (!qcNum.trim()) {
+      set((state) => ({
+        ...state,
+        loading: false,
+      }))
+      return
+    }
+
     set((state) => ({ ...state, loading: true, error: null }))
     try {
       const response = await terminalApi.query(qcNum, signal)

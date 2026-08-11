@@ -2,6 +2,7 @@ import { Suspense, lazy, type ComponentType } from 'react'
 import { Spin } from 'antd'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AuthGuard } from '@/components/common/AuthGuard'
+import { RoleGuard } from '@/components/common/RoleGuard'
 
 const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'))
 const TerminalLayout = lazy(() => import('@/components/layout/TerminalLayout'))
@@ -45,28 +46,33 @@ export const router = createBrowserRouter([
       },
       {
         path: 'admin',
-        element: withSuspense(AdminLayout),
+        element: <RoleGuard allowedRoles={['qcvmt-admin']} />,
         children: [
-          { index: true, element: withSuspense(DashboardPage) },
-          { path: 'users', element: withSuspense(UserList) },
-          { path: 'users/new', element: withSuspense(UserForm) },
-          { path: 'users/:id', element: withSuspense(UserForm) },
-          { path: 'users/:id/logs', element: withSuspense(UserLogs) },
-          { path: 'vessels', element: withSuspense(VesselList) },
-          { path: 'vessels/new', element: withSuspense(VesselForm) },
-          { path: 'vessels/:id', element: withSuspense(VesselForm) },
-          { path: 'color-sets', element: withSuspense(ColorSetList) },
-          { path: 'color-sets/new', element: withSuspense(ColorSetForm) },
-          { path: 'color-sets/:id', element: withSuspense(ColorSetForm) },
-          { path: 'vessel-colors', element: withSuspense(VesselColorList) },
-          { path: 'vessel-colors/new', element: withSuspense(VesselColorForm) },
-          { path: 'vessel-colors/:id', element: withSuspense(VesselColorForm) },
-          { path: 'vessel-refuels', element: withSuspense(VesselRefuelList) },
-          { path: 'vessel-refuels/new', element: withSuspense(VesselRefuelForm) },
-          { path: 'vessel-refuels/:id', element: withSuspense(VesselRefuelForm) },
-          { path: 'bay-config', element: withSuspense(BaySizeForm) },
-          { path: 'import', element: withSuspense(ImportPage) },
-          { path: 'export', element: withSuspense(ExportPage) },
+          {
+            element: withSuspense(AdminLayout),
+            children: [
+              { index: true, element: withSuspense(DashboardPage) },
+              { path: 'users', element: withSuspense(UserList) },
+              { path: 'users/new', element: withSuspense(UserForm) },
+              { path: 'users/:id', element: withSuspense(UserForm) },
+              { path: 'users/:id/logs', element: withSuspense(UserLogs) },
+              { path: 'vessels', element: withSuspense(VesselList) },
+              { path: 'vessels/new', element: withSuspense(VesselForm) },
+              { path: 'vessels/:id', element: withSuspense(VesselForm) },
+              { path: 'color-sets', element: withSuspense(ColorSetList) },
+              { path: 'color-sets/new', element: withSuspense(ColorSetForm) },
+              { path: 'color-sets/:id', element: withSuspense(ColorSetForm) },
+              { path: 'vessel-colors', element: withSuspense(VesselColorList) },
+              { path: 'vessel-colors/new', element: withSuspense(VesselColorForm) },
+              { path: 'vessel-colors/:id', element: withSuspense(VesselColorForm) },
+              { path: 'vessel-refuels', element: withSuspense(VesselRefuelList) },
+              { path: 'vessel-refuels/new', element: withSuspense(VesselRefuelForm) },
+              { path: 'vessel-refuels/:id', element: withSuspense(VesselRefuelForm) },
+              { path: 'bay-config', element: withSuspense(BaySizeForm) },
+              { path: 'import', element: withSuspense(ImportPage) },
+              { path: 'export', element: withSuspense(ExportPage) },
+            ],
+          },
         ],
       },
       {

@@ -39,6 +39,9 @@ apiClient.interceptors.response.use(
 
     if (status === 401) {
       clearAuthTokens()
+      if (window.location.pathname !== '/login') {
+        window.location.replace('/login')
+      }
     }
 
     if (status === 403) {

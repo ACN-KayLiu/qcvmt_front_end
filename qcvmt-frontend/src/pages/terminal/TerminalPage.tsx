@@ -9,24 +9,25 @@ import { useServerClock } from '@/hooks/useServerClock'
 import { useTerminalStore } from '@/stores/terminal'
 import { MOCK_TERMINAL_DATA } from '@/utils/mockTerminalData'
 
-const DEFAULT_QC = 'QC01'
-
 const TerminalPage = () => {
-  const [qcInput, setQcInput] = useState(DEFAULT_QC)
-  const [activeQc, setActiveQc] = useState(DEFAULT_QC)
+  const [qcInput, setQcInput] = useState('')
+  const [activeQc, setActiveQc] = useState('')
   const data = useTerminalStore((state) => state.data)
   const loading = useTerminalStore((state) => state.loading)
   const error = useTerminalStore((state) => state.error)
   const signalStatus = useTerminalStore((state) => state.signalStatus)
   const fetchTerminalData = useTerminalStore((state) => state.fetchTerminalData)
+  const clearData = useTerminalStore((state) => state.clearData)
   const setData = useTerminalStore((state) => state.setData)
   const polling = usePolling(activeQc)
   const clock = useServerClock(data?.serverDateTime)
   const normalizedQc = useMemo(() => qcInput.trim().toUpperCase(), [qcInput])
 
   const handleApplyQc = () => {
-    if (!normalizedQc) return
     setActiveQc(normalizedQc)
+    if (!normalizedQc) {
+      clearData()
+    }
   }
 
   const handleRefresh = async () => {
@@ -77,9 +78,9 @@ const TerminalPage = () => {
             aria-label="QC number"
           />
           <Button type="primary" onClick={handleApplyQc}>
-            Apply
+            {normalizedQc ? 'Apply' : 'Stop'}
           </Button>
-          <Button onClick={() => void handleRefresh()} loading={loading}>
+          <Button onClick={() => void handleRefresh()} loading={loading} disabled={!activeQc}>
             Refresh
           </Button>
           <Button type="dashed" onClick={() => setData(MOCK_TERMINAL_DATA)}>

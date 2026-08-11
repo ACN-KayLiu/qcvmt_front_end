@@ -2,6 +2,7 @@ import { DownOutlined, GlobalOutlined, LogoutOutlined, MoonOutlined, SunOutlined
 import { Button, Dropdown, Typography } from 'antd'
 import type { MenuProps } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
 
@@ -19,9 +20,15 @@ const LANG_SHORT: Record<string, string> = {
 
 export const AppHeader = () => {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const toggleTheme = useAppStore((state) => state.toggleTheme)
   const themeMode = useAppStore((state) => state.themeMode)
   const logout = useAuthStore((state) => state.logout)
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <header className="app-header">
@@ -47,7 +54,7 @@ export const AppHeader = () => {
           onClick={toggleTheme}
           aria-label="Toggle theme"
         />
-        <Button icon={<LogoutOutlined />} onClick={() => void logout()}>
+        <Button icon={<LogoutOutlined />} onClick={() => void handleLogout()}>
           {t('auth.logout')}
         </Button>
       </div>

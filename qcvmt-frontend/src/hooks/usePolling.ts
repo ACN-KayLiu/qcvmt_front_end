@@ -15,6 +15,11 @@ export const usePolling = (qcNum: string) => {
 
   const scheduleNext = useCallback(
     (timeoutCount: number) => {
+      if (!qcNum.trim()) {
+        setPolling({ running: false })
+        return
+      }
+
       const nextInterval = Math.min(BASE_INTERVAL + timeoutCount * STEP_INTERVAL, MAX_INTERVAL)
       setPolling({ intervalMs: nextInterval, timeoutCount })
 
@@ -32,7 +37,8 @@ export const usePolling = (qcNum: string) => {
   )
 
   useEffect(() => {
-    if (!qcNum) {
+    if (!qcNum.trim()) {
+      setPolling({ running: false })
       return
     }
 
