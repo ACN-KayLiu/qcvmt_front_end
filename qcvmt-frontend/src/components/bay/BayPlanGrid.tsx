@@ -13,6 +13,30 @@ const toInt = (value: string): number => {
 
 const formatTierLabel = (tier: number): string => String(tier).padStart(2, '0')
 
+const LEGEND = [
+  { type: 'discharge', label: 'Discharge' },
+  { type: 'load', label: 'Load' },
+  { type: 'empty', label: 'Empty' },
+  { type: 'inactive', label: 'Inactive' },
+  { type: 'unable', label: 'Unable' },
+  { type: 'complexunit', label: 'Complex' },
+  { type: 'twenty', label: '20 FT' },
+  { type: 'refuel', label: 'Refuel' },
+] as const
+
+/** Spreader beam icon — bobs above the active crane column. */
+const CraneIndicator = () => (
+  <span className={styles.craneIndicator} title="QC crane position">
+    <svg width="34" height="22" viewBox="0 0 34 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="17" y1="0" x2="17" y2="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <rect x="2" y="10" width="30" height="5" rx="2" fill="currentColor" />
+      <line x1="7"  y1="15" x2="7"  y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <line x1="17" y1="15" x2="17" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <line x1="27" y1="15" x2="27" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  </span>
+)
+
 /**
  * 将行号按照中心对称排列：左侧偶数递减，右侧奇数递增
  * 例：06 04 02 00 01 03 05 07 09
@@ -40,10 +64,9 @@ const sortRowsAroundCenter = (rowValues: number[]): number[] => {
 /**
  * Literal replica of CellDaoImpl#buildBay / #getFirstLine: a single flat
  * table, tiers descending top-to-bottom, one header row (Tier + row
- * numbers). No Hold/Deck divider rows, no legend, no crane icon — none of
- * those exist in the legacy output. A row's header cell gets the same
- * "load" (orange) class the JSP applies when that row is under the active
- * crane lane.
+ * numbers). With Hold/Deck divider rows, legend, and crane icon.
+ * A row's header cell gets the same "load" (orange) class the JSP applies 
+ * when that row is under the active crane lane.
  */
 export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
   const sequenceMap = new Map<string, (typeof data.sequences)[number]>()
@@ -71,48 +94,88 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
       data.sequences
         .map((item) => toInt(item.tier))
         .filter((value) => Number.isFinite(value) && value >= 0)
-        .sort((a, b) => b - a),
+        .sort((a, b) => a - b),
     ),
   )
 
-  const fallbackTierCount = Math.max(data.tiers, 1)
-  const fallbackTiers = Array.from({ length: fallbackTierCount }, (_, index) => index * 2).sort(
-    (a, b) => b - a,
-  )
-  const tiers = tierValues.length > 0 ? tierValues : fallbackTiers
+  const holdTiers = tierValues.filter((tier) => tier <= 70)
+  const deckTiers = tierValues.filter((tier) => tier > 70)
 
-  const activeRows = new Set(data.sequences.filter((s) => s.isCurrent).map((s) => toInt(s.row)))
+  const fallbackTierCount = Math.max(data.tiers, 1)
+  const fallbackHold = Array.from({ length: fallbackTierCount }, (_, index) => index * 2)
+  const tiersForHold = holdTiers.length > 0 ? holdTiers : fallbackHold
+  const tiersForDeck = deckTiers
+
+  const currentSequence = data.sequences.find((s) => s.isCurrent)
+  const currentRow = currentSequence ? toInt(currentSequence.row) : null
+
+  const renderTierRows = (tiers: number[]) => {
+    return tiers
+      .slice()
+      .sort((a, b) => b - a)
+      .map((tier) => (
+        <tr key={`tier-${tier}`}>
+          <td className={styles.tierCell}>{formatTierLabel(tier)}</td>
+          {rows.map((row) => {
+            const key = `${row}-${tier}`
+            const sequence = sequenceMap.get(key)
+            return (
+              <td key={key}>
+                <BayCell item={sequence} type={sequence?.type ?? 'empty'} text={sequence?.text ?? ''} />
+              </td>
+            )
+          })}
+        </tr>
+      ))
+  }
 
   return (
-    <table className={styles.table} role="grid" aria-label="Bay plan grid">
-      <tbody>
-        <tr>
-          <td className={styles.tierNum}>Tier</td>
-          {rows.map((row) => (
-            <td key={`row-${row}`} className={activeRows.has(row) ? styles.load : styles.tierNum}>
-              {String(row).padStart(2, '0')}
-            </td>
-          ))}
-        </tr>
-
-        {tiers.map((tier) => (
-          <tr key={`tier-${tier}`}>
-            <td className={styles.tierNum}>{formatTierLabel(tier)}</td>
-            {rows.map((row) => {
-              const key = `${row}-${tier}`
-              const sequence = sequenceMap.get(key)
-              return (
-                <BayCell
-                  key={key}
-                  item={sequence}
-                  type={sequence?.type ?? 'empty'}
-                  text={sequence?.text ?? ''}
-                />
-              )
-            })}
+    <div className={styles.wrapper} role="grid" aria-label="Bay plan grid">
+      <table className={styles.table}>
+        <thead>
+          {currentRow !== null ? (
+            <tr className={styles.craneRow} aria-hidden="true">
+              <td />
+              {rows.map((row) => (
+                <td key={`crane-${row}`}>{row === currentRow ? <CraneIndicator /> : null}</td>
+              ))}
+            </tr>
+          ) : null}
+          <tr>
+            <th className={styles.headCell}>Tier</th>
+            {rows.map((row) => (
+              <th key={`row-${row}`} className={styles.headCell}>
+                {String(row).padStart(2, '0')}
+              </th>
+            ))}
           </tr>
+        </thead>
+
+        <tbody>
+          <tr className={styles.sectionRow}>
+            <td colSpan={rows.length + 1}>Hold</td>
+          </tr>
+          {renderTierRows(tiersForHold)}
+
+          {tiersForDeck.length > 0 ? (
+            <>
+              <tr className={styles.sectionRow}>
+                <td colSpan={rows.length + 1}>Deck</td>
+              </tr>
+              {renderTierRows(tiersForDeck)}
+            </>
+          ) : null}
+        </tbody>
+      </table>
+
+      <div className={styles.legend} aria-label="Cell type legend">
+        {LEGEND.map(({ type, label }) => (
+          <div key={type} className={styles.legendItem}>
+            <span className={`${styles.legendSwatch} ${styles[type]}`} />
+            <span>{label}</span>
+          </div>
         ))}
-      </tbody>
-    </table>
+      </div>
+    </div>
   )
 }
