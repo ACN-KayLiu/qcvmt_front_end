@@ -13,7 +13,8 @@ interface AuthState {
   isAuthenticated: boolean
   roles: string[]
   loading: boolean
-  login: (username: string, password: string) => Promise<void>
+  qcid: string
+  login: (username: string, password: string, qcid: string) => Promise<void>
   hydrateUser: () => Promise<void>
   logout: () => Promise<void>
 }
@@ -58,8 +59,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   roles: [],
+  qcid: '',
   loading: true,
-  login: async (username, password) => {
+  login: async (username, password, qcid) => {
     set({ loading: true })
     try {
       const response = await authApi.login({ username, password })
@@ -69,6 +71,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({
           user: toUser(response.data.user),
           roles: collectRoles(response.data.user),
+          qcid: qcid,
           isAuthenticated: true,
           loading: false,
         })
@@ -81,6 +84,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({
         user: null,
         roles: [],
+        qcid: '',
         isAuthenticated: false,
         loading: false,
       })
@@ -93,6 +97,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({
         user: null,
         roles: [],
+        qcid: '',
         isAuthenticated: false,
         loading: false,
       })
@@ -105,6 +110,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({
         user: toUser(response.data),
         roles: collectRoles(response.data),
+        qcid: response.data.qcid || '',
         isAuthenticated: true,
         loading: false,
       })
@@ -113,6 +119,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({
         user: null,
         roles: [],
+        qcid: '',
         isAuthenticated: false,
         loading: false,
       })
@@ -123,6 +130,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({
       user: null,
       roles: [],
+      qcid: '',
       isAuthenticated: false,
       loading: false,
     })
