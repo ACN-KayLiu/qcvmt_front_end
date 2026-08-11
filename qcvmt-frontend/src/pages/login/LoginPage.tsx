@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 interface LoginFormValues {
   username: string
   password: string
+  qcid: string
 }
 
 const LoginPage = () => {
@@ -23,7 +24,7 @@ const LoginPage = () => {
   const onFinish = async (values: LoginFormValues) => {
     setSubmitting(true)
     try {
-      await login(values.username, values.password)
+      await login(values.username, values.password, values.qcid)
       const from = (location.state as { from?: string } | null)?.from
       navigate(from || '/terminal', { replace: true })
     } catch (error) {
@@ -97,6 +98,14 @@ const LoginPage = () => {
                   rules={[{ required: true, message: 'Password is required' }]}
                 >
                   <Input.Password autoComplete="current-password" />
+                </Form.Item>
+
+                <Form.Item
+                  label="QC Number"
+                  name="qcid"
+                  rules={[{ required: true, message: 'QC number is required' }]}
+                >
+                  <Input placeholder="e.g., QC01" autoComplete="off" />
                 </Form.Item>
 
                 <Button type="primary" htmlType="submit" loading={submitting} block>
