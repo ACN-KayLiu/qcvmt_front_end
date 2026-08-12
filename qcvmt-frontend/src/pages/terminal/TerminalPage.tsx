@@ -1,99 +1,58 @@
-import { useMemo, useState } from 'react'
-import { Button, Input } from 'antd'
+import { useEffect, useMemo, useRef } from 'react'
+import { Button } from 'antd'
 import { BayPlanGrid } from '@/components/bay/BayPlanGrid'
-import { AdminPageCard } from '@/components/common/AdminPageCard'
-import { SignalIndicator } from '@/components/bay/SignalIndicator'
+import { TerminalBanner } from '@/components/bay/TerminalBanner'
 import { PageState } from '@/components/common/PageState'
 import { usePolling } from '@/hooks/usePolling'
 import { useServerClock } from '@/hooks/useServerClock'
+import { useAuthStore } from '@/stores/auth'
 import { useTerminalStore } from '@/stores/terminal'
 import { MOCK_TERMINAL_DATA } from '@/utils/mockTerminalData'
 
 const TerminalPage = () => {
-  const [qcInput, setQcInput] = useState('')
-  const [activeQc, setActiveQc] = useState('')
+  const qcid = useAuthStore((state) => state.qcid)
   const data = useTerminalStore((state) => state.data)
   const loading = useTerminalStore((state) => state.loading)
   const error = useTerminalStore((state) => state.error)
   const signalStatus = useTerminalStore((state) => state.signalStatus)
-  const fetchTerminalData = useTerminalStore((state) => state.fetchTerminalData)
-  const clearData = useTerminalStore((state) => state.clearData)
   const setData = useTerminalStore((state) => state.setData)
+  const activeQc = useMemo(() => qcid.trim().toUpperCase(), [qcid])
   const polling = usePolling(activeQc)
   const clock = useServerClock(data?.serverDateTime)
-  const normalizedQc = useMemo(() => qcInput.trim().toUpperCase(), [qcInput])
+  const prevActiveQcRef = useRef(activeQc)
 
-  const handleApplyQc = () => {
-    setActiveQc(normalizedQc)
-    if (!normalizedQc) {
-      clearData()
+  useEffect(() => {
+    const prevActiveQc = prevActiveQcRef.current
+    if (prevActiveQc && !activeQc) {
+      useTerminalStore.getState().clearData()
     }
-  }
+    prevActiveQcRef.current = activeQc
+  }, [activeQc])
 
-  const handleRefresh = async () => {
-    if (!activeQc) return
-    await fetchTerminalData(activeQc)
-  }
-
-  const cardTitle = data ? `${data.vesselName} — Bay ${data.bayName}` : 'Terminal'
-
-  const cardExtra = data ? (
-    <div className="terminal-context">
-      {data.voyage ? <span className="bay-chip">{data.voyage}</span> : null}
-      <span className="bay-chip">QC {data.qcAct}</span>
-    </div>
-  ) : null
+  useEffect(() => {
+    if (!activeQc && !data) {
+      setData(MOCK_TERMINAL_DATA)
+    }
+  }, [activeQc, data, setData])
 
   return (
-    <AdminPageCard title={cardTitle} extra={cardExtra}>
-      <div className="terminal-controls">
-        <div className="terminal-controls-status">
-          {data ? (
-            <>
-              <span className="tsr-sep" aria-hidden="true" />
-            </>
-          ) : null}
-          <SignalIndicator status={signalStatus} />
-          {data ? (
-            <>
-              <span className="tsr-sep" aria-hidden="true" />
-              <span className="tsr-item">
-                <span className="tsr-label">Clock</span>
-                {clock.dateTime}
-              </span>
-              <span className="tsr-sep" aria-hidden="true" />
-              <span className="tsr-item">
-                <span className="tsr-label">Poll</span>
-                {polling.intervalMs / 1000}s{polling.running ? '' : ' (paused)'}
-              </span>
-            </>
-          ) : null}
+    <div className="terminal-view">
+      <TerminalBanner data={data} dateTime={clock.dateTime} signalStatus={signalStatus} />
+
+      <div id="tableList">
+        <div className="terminal-polling-status" aria-live="polite">
+          {activeQc ? `QC ${activeQc} | ${polling.intervalMs / 1000}s${polling.running ? '' : ' (paused)'}` : ''}
         </div>
-        <div className="terminal-controls-actions">
-          <Input
-            value={qcInput}
-            onChange={(event) => setQcInput(event.target.value)}
-            onPressEnter={handleApplyQc}
-            placeholder="QC number"
-            aria-label="QC number"
-          />
-          <Button type="primary" onClick={handleApplyQc}>
-            {normalizedQc ? 'Apply' : 'Stop'}
-          </Button>
-          <Button onClick={() => void handleRefresh()} loading={loading} disabled={!activeQc}>
-            Refresh
-          </Button>
-          <Button type="dashed" onClick={() => setData(MOCK_TERMINAL_DATA)}>
+        <div className="terminal-demo-action">
+          <Button size="small" type="dashed" onClick={() => setData(MOCK_TERMINAL_DATA)}>
             Demo
           </Button>
         </div>
+        <PageState loading={loading} error={error} isEmpty={!data} />
+        {data ? <BayPlanGrid data={data} /> : null}
       </div>
-
-      <PageState loading={loading} error={error} isEmpty={!data} />
-      {data ? <BayPlanGrid data={data} /> : null}
-    </AdminPageCard>
+    </div>
   )
 }
 
 export default TerminalPage
-

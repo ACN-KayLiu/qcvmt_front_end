@@ -13,6 +13,10 @@ export const AuthGuard = () => {
     return <Spin fullscreen />
   }
 
+  if (location.pathname.startsWith('/terminal')) {
+    return <Outlet />
+  }
+
   if (!isAuthenticated || !hasTokens) {
     const from = `${location.pathname}${location.search}${location.hash}`
     return <Navigate to="/login" replace state={{ from }} />

@@ -7,39 +7,30 @@ interface BayCellProps {
   type?: SequenceVO['type']
   text?: string
   isDg?: boolean
-  isCurrent?: boolean
 }
 
-const BayCellRaw = ({ item, type, text, isDg, isCurrent }: BayCellProps) => {
-  const resolvedType = item?.type || type || 'empty'
-  const resolvedText = text ?? item?.text ?? ''
-  const resolvedIsDg = isDg ?? item?.isDg ?? false
-  const resolvedIsCurrent = isCurrent ?? item?.isCurrent ?? false
+/**
+ * Literal replica of a single <td> emitted by CellDaoImpl#buildBay:
+ *   <td class="{status}">{cellInfo}</td>
+ *   <td class="refuel">&nbsp;</td>
+ *   cellInfo + <span class="dgind|infodgind">*</span> when is_dg
+ */
+const BayCellRaw = ({ item, type, text, isDg }: BayCellProps) => {
+  const resolvedType = item?.type || type || 'blank'
+  const resolvedText = resolvedType === 'refuel' ? '' : text ?? item?.text ?? ''
+  void isDg
 
-  const cssClass = [
-    styles.cell,
-    styles[resolvedType] ?? '',
-    resolvedIsCurrent ? styles.current : '',
-  ]
-    .filter(Boolean)
-    .join(' ')
+  const cssClass = [styles[resolvedType] ?? ''].filter(Boolean).join(' ')
 
   const ariaLabel = item
-    ? `Bay ${item.bay}, row ${item.row}, tier ${item.tier}${resolvedIsCurrent ? ', active' : ''}`
+    ? `Bay ${item.bay}, row ${item.row}, tier ${item.tier}`
     : `Bay cell ${resolvedType}`
 
   return (
-    <div className={cssClass} aria-label={ariaLabel}>
-      {resolvedIsCurrent ? <span className={styles.currentDot} aria-hidden="true" /> : null}
-      <span className={styles.cellText}>{resolvedText}</span>
-      {resolvedIsDg ? (
-        <span className={styles.dg} aria-label="Dangerous goods">
-          DG
-        </span>
-      ) : null}
-    </div>
+    <td className={cssClass} aria-label={ariaLabel}>
+      {resolvedType === 'blank' ? '\u00A0' : resolvedText}
+    </td>
   )
 }
 
 export const BayCell = memo(BayCellRaw)
-

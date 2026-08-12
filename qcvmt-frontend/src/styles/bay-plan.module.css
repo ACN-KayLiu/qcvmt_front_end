@@ -1,245 +1,141 @@
 .wrapper {
   width: 100%;
-  /* card chrome removed — terminal-bay-panel provides the container */
 }
 
 .table {
-  border-collapse: collapse;
-  min-width: 720px;
   width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #ffffff;
 }
 
-/* Crane spreader row — sits above column headers */
-.craneRow td {
-  padding: 4px 0 2px;
+.table th,
+.table td {
+  border: 1px solid #e1e6ed;
   text-align: center;
-  border: none;
-  background: transparent;
-  vertical-align: bottom;
-}
-
-.craneIndicator {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  color: var(--brand-500);
-  animation: craneBob 2s ease-in-out infinite;
-}
-
-@keyframes craneBob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(5px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .craneIndicator { animation: none; }
-}
-
-/* Hold / Deck section dividers */
-.sectionRow td {
-  background: color-mix(in srgb, var(--brand-100) 48%, var(--bg-soft) 52%);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-align: left;
-  border: 1px solid var(--line-soft);
-  padding: 6px 14px;
-  color: var(--text-secondary);
-}
-
-/* Row column headers (02, 04, 06…) */
-.headCell {
-  background: color-mix(in srgb, var(--bg-soft) 95%, transparent);
-  border: 1px solid var(--line-soft);
-  font-size: 13px;
-  font-weight: 700;
-  text-align: center;
-  padding: 10px 6px;
-  color: var(--text-secondary);
-  min-width: 80px;
-}
-
-/* Tier label column */
-.tierCell {
-  background: var(--bg-elevated);
-  border: 1px solid var(--line-soft);
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-  padding: 8px;
-  width: 58px;
-  color: var(--text-secondary);
-}
-
-/* Base bay cell — sized for large-screen legibility */
-.cell {
-  min-height: 54px;
-  min-width: 80px;
-  border: 1px solid color-mix(in srgb, var(--line-strong) 55%, transparent);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  color: #101010;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 17px;
+  font-weight: 400;
   position: relative;
-  padding: 6px;
-  box-sizing: border-box;
-  gap: 1px;
-  transition: box-shadow 0.15s;
+  padding: 0;
 }
 
-.cellText {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-align: center;
-  line-height: 1.15;
+.headCell,
+.tierCell {
+  background: #ffffff;
 }
 
-/* ── Cell type fills — bold solid colors for distance readability ────── */
+.headCell {
+  height: 66px;
+  letter-spacing: 0.01em;
+}
+
+.tierCell {
+  width: 130px;
+  min-width: 130px;
+}
+
+.table tbody td {
+  height: 104px;
+}
+
+.table tbody .tierCell {
+  background: #ffffff;
+}
+
+.blank {
+  background: #ffffff;
+}
+
+.sectionRow td {
+  height: 62px;
+  background: #ffffff;
+  font-size: 46px;
+  line-height: 1;
+}
 
 .inactive {
-  background: #dde5ea;
-  color: #8fa3af;
+  background-color: #ffffff;
 }
 
 .unable {
-  background: #374151;
-  color: #6b7280;
+  background-color: #ffffff;
 }
 
 .empty {
-  background: color-mix(in srgb, var(--bg-soft) 88%, transparent);
-  color: #b0bec5;
+  background-color: #ffffff;
 }
 
 .discharge {
-  background: #16a34a;
+  background-color: #078f27;
   color: #ffffff;
 }
 
 .load {
-  background: #ea580c;
+  background-color: #f37012;
   color: #ffffff;
 }
 
 .complexunit {
-  background: #7c3aed;
+  background-color: #7443c9;
   color: #ffffff;
 }
 
 .twenty {
-  background: #dc2626;
-  color: #ffffff;
+  color: #ff0000 !important;
+  background-color: #ffffff;
 }
 
 .refuel {
-  background: #d97706;
+  background-color: #00810d;
   color: #ffffff;
 }
 
-/* ── Active crane position ───────────────────────────────────────────── */
-
-.current {
-  box-shadow: inset 0 0 0 3px var(--brand-500), 0 0 18px rgba(15, 122, 99, 0.45);
-  animation: cranePulse 1.8s ease-in-out infinite;
-  z-index: 1;
-}
-
-@keyframes cranePulse {
-  0%, 100% {
-    box-shadow: inset 0 0 0 3px var(--brand-500), 0 0 8px rgba(15, 122, 99, 0.3);
-  }
-  50% {
-    box-shadow: inset 0 0 0 3px var(--brand-500), 0 0 28px rgba(15, 122, 99, 0.75);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .current {
-    animation: none;
-    box-shadow: inset 0 0 0 3px var(--brand-500);
-  }
-}
-
-/* Blinking dot signals live work on this cell */
-.currentDot {
+.dgind {
   position: absolute;
-  top: 5px;
-  left: 5px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 7px rgba(255, 255, 255, 0.85);
-  animation: dotBlink 1.8s ease-in-out infinite;
+  top: 2px;
+  right: 2px;
+  background: #ffff00;
+  color: #ff0000;
+  font-size: 32px;
+  line-height: 14px;
+  padding: 4px 2px 0;
 }
 
-@keyframes dotBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.25; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .currentDot { animation: none; }
-}
-
-/* DG (Dangerous Goods) corner badge */
-.dg {
+.infodgind {
   position: absolute;
-  top: 3px;
-  right: 3px;
-  background: #fef08a;
-  color: #92400e;
-  font-size: 8px;
-  font-weight: 800;
-  padding: 1px 4px;
-  border-radius: 3px;
-  line-height: 1.4;
-  letter-spacing: 0.04em;
+  top: 2px;
+  right: 2px;
+  background: #ffff00;
+  color: #ff0000;
+  font-size: 20px;
+  line-height: 7px;
+  padding: 4px 2px 0;
 }
 
-/* ── Color legend ────────────────────────────────────────────────────── */
-
+/* Legend removed to match legacy table-focused terminal view. */
 .legend {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px 20px;
-  padding: 11px 16px;
-  border-top: 1px solid var(--line-soft);
-  background: color-mix(in srgb, var(--bg-soft) 70%, transparent);
-  border-radius: 0;
+  display: none;
 }
 
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.02em;
-}
+@media (max-width: 768px) {
+  .table th,
+  .table td {
+    font-size: 14px;
+  }
 
-/* Swatch inherits background from the cell-type class (e.g. .discharge) */
-.legendSwatch {
-  display: inline-block;
-  width: 22px;
-  height: 13px;
-  border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-}
+  .headCell {
+    height: 50px;
+  }
 
-/* ── Dark mode overrides for light-only fills ────────────────────────── */
+  .table tbody td {
+    height: 74px;
+  }
 
-:global([data-theme='dark']) .inactive {
-  background: #293a47;
-  color: #4a6070;
-}
+  .sectionRow td {
+    height: 46px;
+    font-size: 30px;
+  }
 
-:global([data-theme='dark']) .empty {
-  background: color-mix(in srgb, var(--bg-soft) 95%, transparent);
-  color: #374f5e;
 }

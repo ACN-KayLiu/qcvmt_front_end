@@ -201,92 +201,121 @@ a {
 .terminal-view {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
-.terminal-vessel {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
+/* ---- Terminal banner: literal replica of legacy #headerInfo table ---- */
+#headerInfo {
+  position: relative;
+  font-size: 16px;
+  font-family: 'Times New Roman', Times, serif;
+  color: #ffffff;
+  text-align: center;
+}
+
+.terminal-banner-table {
+  background-color: #0a06ff;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.terminal-banner-table .d1_d {
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.05;
+  color: #ffffff;
+  font-family: 'Times New Roman', Times, serif;
+  border: 0;
+  padding: 28px 10px 22px;
+  text-align: left;
   white-space: nowrap;
-  letter-spacing: 0.01em;
 }
 
-.terminal-bay-area {
-  flex: 1;
-  min-height: 0;
+.terminal-banner-table .d1_head {
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1.06;
+  color: #ffffff;
+  font-family: 'Times New Roman', Times, serif;
+  border: 0;
+  padding: 42px 10px 28px;
+  text-align: left;
+  white-space: nowrap;
 }
 
-.terminal-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  row-gap: 8px;
+.terminal-banner-logout.ant-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 2;
+  height: 22px;
+  padding-inline: 6px !important;
+  font-size: 12px;
+  line-height: 1;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  background: transparent !important;
+  opacity: 0.72;
 }
 
-.terminal-controls-status {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex: 1;
-  min-width: 0;
+.terminal-banner-logout.ant-btn:hover,
+.terminal-banner-logout.ant-btn:focus-visible {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.7) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  opacity: 1;
 }
 
-.terminal-controls-actions {
+.terminal-signal-lamp {
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+  vertical-align: middle;
+  border-radius: 50%;
+}
+
+.terminal-signal-lamp.is-ok {
+  background: #00c000;
+}
+
+.terminal-signal-lamp.is-down {
+  background: #ff0000;
+}
+
+.terminal-toolbar {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  padding: 6px 4px;
 }
 
-.terminal-controls-actions .ant-input {
+.terminal-toolbar-qc {
+  min-width: 120px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.terminal-toolbar .ant-input {
   width: 140px;
 }
 
-.terminal-context {
+.terminal-toolbar-poll {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.terminal-polling-status {
+  min-height: 14px;
+  margin: 0 0 2px;
+  font-size: 11px;
+  color: rgba(18, 36, 44, 0.52);
+}
+
+.terminal-demo-action {
+  margin: 0 0 6px;
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bay-chip {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
-  background: color-mix(in srgb, var(--bg-soft) 75%, transparent);
-  border: 1px solid var(--line-soft);
-  border-radius: 5px;
-  padding: 3px 9px;
-  white-space: nowrap;
-}
-
-/* Status rail tokens — used inside .terminal-controls-status */
-.tsr-sep {
-  display: inline-block;
-  width: 1px;
-  height: 16px;
-  background: var(--line-strong);
-  margin: 0 14px;
-  flex-shrink: 0;
-}
-
-.tsr-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.tsr-label {
-  color: var(--text-secondary);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  font-weight: 600;
+  justify-content: flex-end;
 }
 
 .route-page {
@@ -483,16 +512,31 @@ a {
     flex-wrap: wrap;
   }
 
-  .terminal-controls {
-    flex-direction: column;
-    align-items: stretch;
+  .terminal-banner-table .d1_d {
+    font-size: 20px;
+    padding: 16px 8px 12px;
   }
 
-  .terminal-controls-actions {
+  .terminal-banner-table .d1_head {
+    font-size: 24px;
+    padding: 20px 8px 16px;
+  }
+
+  .terminal-signal-lamp {
+    width: 22px;
+    height: 22px;
+  }
+
+  .terminal-toolbar {
     flex-wrap: wrap;
   }
 
-  .terminal-controls-actions .ant-input {
+  .terminal-toolbar .ant-input {
+    width: 100%;
+  }
+
+  .terminal-toolbar-poll {
+    margin-left: 0;
     width: 100%;
   }
 

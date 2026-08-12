@@ -13,33 +13,9 @@ const toInt = (value: string): number => {
 
 const formatTierLabel = (tier: number): string => String(tier).padStart(2, '0')
 
-const LEGEND = [
-  { type: 'discharge', label: 'Discharge' },
-  { type: 'load', label: 'Load' },
-  { type: 'empty', label: 'Empty' },
-  { type: 'inactive', label: 'Inactive' },
-  { type: 'unable', label: 'Unable' },
-  { type: 'complexunit', label: 'Complex' },
-  { type: 'twenty', label: '20 FT' },
-  { type: 'refuel', label: 'Refuel' },
-] as const
-
-/** Spreader beam icon — bobs above the active crane column. */
-const CraneIndicator = () => (
-  <span className={styles.craneIndicator} title="QC crane position">
-    <svg width="34" height="22" viewBox="0 0 34 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <line x1="17" y1="0" x2="17" y2="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <rect x="2" y="10" width="30" height="5" rx="2" fill="currentColor" />
-      <line x1="7"  y1="15" x2="7"  y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <line x1="17" y1="15" x2="17" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <line x1="27" y1="15" x2="27" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  </span>
-)
-
 /**
- * 将行号按照中心对称排列：左侧偶数递减，右侧奇数递增
- * 例：06 04 02 00 01 03 05 07 09
+ * 将行号按照中心对称排列：左侧偶数递减，右侧奇数递增。
+ * 例：10 08 06 04 02 00 01 03 05 07 09
  */
 const sortRowsAroundCenter = (rowValues: number[]): number[] => {
   const evenRows = rowValues.filter((row) => row % 2 === 0).sort((a, b) => b - a)
@@ -61,6 +37,26 @@ const sortRowsAroundCenter = (rowValues: number[]): number[] => {
   return [...leftEvens, ...rightPart]
 }
 
+const buildCenteredRows = (rowValues: number[], rowCount: number): number[] => {
+  const hasZero = rowValues.includes(0)
+  const hasOdd = rowValues.some((value) => value % 2 !== 0)
+
+  if (hasZero || hasOdd) {
+    return sortRowsAroundCenter(rowValues)
+  }
+
+  const normalizedCount = Math.max(rowCount, 1)
+  if (normalizedCount === 1) {
+    return [0]
+  }
+
+  const leftMaxEven = (normalizedCount - 1) * 2
+  const leftEvens = Array.from({ length: normalizedCount - 1 }, (_, index) => leftMaxEven - index * 2)
+  const rightOdds = Array.from({ length: normalizedCount - 1 }, (_, index) => index * 2 + 1)
+
+  return [...leftEvens, 0, ...rightOdds]
+}
+
 /**
  * Literal replica of CellDaoImpl#buildBay / #getFirstLine: a single flat
  * table, tiers descending top-to-bottom, one header row (Tier + row
@@ -80,14 +76,15 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
     new Set(
       data.sequences
         .map((item) => toInt(item.row))
-        .filter((value) => Number.isFinite(value) && value > 0)
+        .filter((value) => Number.isFinite(value) && value >= 0)
         .sort((a, b) => a - b),
     ),
   )
 
-  const rows = rowValues.length > 0 ? sortRowsAroundCenter(rowValues) : sortRowsAroundCenter(
-    Array.from({ length: Math.max(data.rows, 1) }, (_, index) => (index + 1) * 2)
-  )
+  const rows =
+    rowValues.length > 0
+      ? buildCenteredRows(rowValues, Math.max(data.rows, 1))
+      : buildCenteredRows(Array.from({ length: Math.max(data.rows, 1) }, (_, index) => index * 2), Math.max(data.rows, 1))
 
   const tierValues = Array.from(
     new Set(
@@ -98,16 +95,9 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
     ),
   )
 
-  const holdTiers = tierValues.filter((tier) => tier <= 70)
-  const deckTiers = tierValues.filter((tier) => tier > 70)
-
   const fallbackTierCount = Math.max(data.tiers, 1)
-  const fallbackHold = Array.from({ length: fallbackTierCount }, (_, index) => index * 2)
-  const tiersForHold = holdTiers.length > 0 ? holdTiers : fallbackHold
-  const tiersForDeck = deckTiers
-
-  const currentSequence = data.sequences.find((s) => s.isCurrent)
-  const currentRow = currentSequence ? toInt(currentSequence.row) : null
+  const fallbackTiers = Array.from({ length: fallbackTierCount }, (_, index) => index * 2)
+  const tiers = tierValues.length > 0 ? tierValues : fallbackTiers
 
   const renderTierRows = (tiers: number[]) => {
     return tiers
@@ -119,11 +109,7 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
           {rows.map((row) => {
             const key = `${row}-${tier}`
             const sequence = sequenceMap.get(key)
-            return (
-              <td key={key}>
-                <BayCell item={sequence} type={sequence?.type ?? 'empty'} text={sequence?.text ?? ''} />
-              </td>
-            )
+            return <BayCell key={key} item={sequence} type={sequence?.type} text={sequence?.text ?? ''} />
           })}
         </tr>
       ))
@@ -133,14 +119,6 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
     <div className={styles.wrapper} role="grid" aria-label="Bay plan grid">
       <table className={styles.table}>
         <thead>
-          {currentRow !== null ? (
-            <tr className={styles.craneRow} aria-hidden="true">
-              <td />
-              {rows.map((row) => (
-                <td key={`crane-${row}`}>{row === currentRow ? <CraneIndicator /> : null}</td>
-              ))}
-            </tr>
-          ) : null}
           <tr>
             <th className={styles.headCell}>Tier</th>
             {rows.map((row) => (
@@ -152,30 +130,9 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
         </thead>
 
         <tbody>
-          <tr className={styles.sectionRow}>
-            <td colSpan={rows.length + 1}>Hold</td>
-          </tr>
-          {renderTierRows(tiersForHold)}
-
-          {tiersForDeck.length > 0 ? (
-            <>
-              <tr className={styles.sectionRow}>
-                <td colSpan={rows.length + 1}>Deck</td>
-              </tr>
-              {renderTierRows(tiersForDeck)}
-            </>
-          ) : null}
+          {renderTierRows(tiers)}
         </tbody>
       </table>
-
-      <div className={styles.legend} aria-label="Cell type legend">
-        {LEGEND.map(({ type, label }) => (
-          <div key={type} className={styles.legendItem}>
-            <span className={`${styles.legendSwatch} ${styles[type]}`} />
-            <span>{label}</span>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }
