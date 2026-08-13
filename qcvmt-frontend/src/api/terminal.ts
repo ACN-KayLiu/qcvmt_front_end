@@ -94,6 +94,25 @@ const extractTierFromSlot = (slot?: string): string => {
   return sixDigits.slice(-2)
 }
 
+// pos_slot is BBRRTT: chars 0-1 = bay, 2-3 = row, 4-5 = tier. This mirrors the
+// legacy CellDaoImpl parsing (current_pos_slot.substring(2, 4)). Note that
+// qrow (a work-queue ordering field) is NOT the physical row and must not be
+// used for grid placement.
+const extractRowFromSlot = (slot?: string): string => {
+  if (!slot) {
+    return '0'
+  }
+
+  const normalized = slot.trim().toUpperCase()
+  const match = normalized.match(/(\d{6})(?:\.\d+)?$/)
+  if (!match) {
+    return '0'
+  }
+
+  const sixDigits = match[1]
+  return sixDigits.slice(2, 4)
+}
+
 const extractQcFromMessage = (message?: string): string => {
   if (!message) {
     return ''
@@ -121,7 +140,7 @@ const transformTerminalData = (payload: BackendTerminalResponse, qcNum: string):
   const queueSequences = workQueueItems.map((item, index) => ({
     id: `queue-${index}-${item.currentPosSlot || item.plannedPosSlot || 'cell'}`,
     bay: item.bay || data.bay || '',
-    row: item.qrow || '0',
+    row: extractRowFromSlot(item.currentPosSlot || item.plannedPosSlot),
     tier: extractTierFromSlot(item.currentPosSlot || item.plannedPosSlot),
     type: mapQTypeToCellType(item.qtype || workQueue.qType),
     text: item.currentPosSlot || item.plannedPosSlot || '',
