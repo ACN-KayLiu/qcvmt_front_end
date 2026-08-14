@@ -128,15 +128,6 @@ const transformTerminalData = (payload: BackendTerminalResponse, qcNum: string):
   const workQueueItems = workQueue.sequences || []
   const cellMatrix = data.cellMatrix || []
 
-  const matrixSequences = cellMatrix.map((item) => ({
-    id: `matrix-${item.id || `${item.row || '0'}-${item.tier || '0'}`}`,
-    bay: data.bay || '',
-    row: item.row || '0',
-    tier: item.tier || '0',
-    type: (item.active === '1' ? 'empty' : 'inactive') as CellType,
-    text: '',
-  }))
-
   const queueSequences = workQueueItems.map((item, index) => ({
     id: `queue-${index}-${item.currentPosSlot || item.plannedPosSlot || 'cell'}`,
     bay: item.bay || data.bay || '',
@@ -153,6 +144,19 @@ const transformTerminalData = (payload: BackendTerminalResponse, qcNum: string):
   const voyage = workQueue.vesselId || ''
   const qcFromMessage = extractQcFromMessage(payload.message)
 
+  const hasQueueSequences = queueSequences.length > 0
+
+  const matrixFallbackSequences = hasQueueSequences
+    ? []
+    : cellMatrix.map((item) => ({
+        id: `matrix-${item.id || `${item.row || '0'}-${item.tier || '0'}`}`,
+        bay: data.bay || '',
+        row: item.row || '0',
+        tier: item.tier || '0',
+        type: (item.active === '1' ? 'empty' : 'inactive') as CellType,
+        text: '',
+      }))
+
   return {
     bayName,
     vesselName,
@@ -160,10 +164,14 @@ const transformTerminalData = (payload: BackendTerminalResponse, qcNum: string):
     qcAct: qcFromMessage || qcNum,
     reful: '',
     rows: inferRows(vessels),
-    tiers: inferTiers(vessels),
+    tiers: hasQueueSequences ? 0 : inferTiers(vessels),
     serverDateTime: String(payload.timestamp || new Date().toISOString()),
-    sequences: [...matrixSequences, ...queueSequences],
+    sequences: hasQueueSequences ? queueSequences : matrixFallbackSequences,
   }
+}
+
+export const __testing__ = {
+  transformTerminalData,
 }
 
 export const terminalApi = {
