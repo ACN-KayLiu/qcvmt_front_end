@@ -1,5 +1,8 @@
 import type { TerminalView } from '@/types/terminal'
 
+const DEMO_ROWS = ['10', '08', '06', '04', '02', '00', '01', '03', '05', '07', '09']
+const DEMO_TIERS = ['88', '84', '82', '12', '10', '08', '06', '04', '02']
+
 /** Rich demo data for visual review: multiple bays active with mixed statuses. */
 export const MOCK_TERMINAL_DATA: TerminalView = {
   bayName: '0001',
@@ -7,9 +10,10 @@ export const MOCK_TERMINAL_DATA: TerminalView = {
   voyage: 'EA-0234W',
   qcAct: 'QC01',
   reful: 'No',
-  rows: 6,
-  tiers: 8,
   serverDateTime: new Date().toISOString(),
+  cells: DEMO_ROWS.flatMap((row) =>
+    DEMO_TIERS.map((tier) => ({ row, tier, active: true })),
+  ),
   sequences: [
     // Keep row headers deterministic: 10 08 06 04 02 00 01 03 05 07 09
     { id: 'seed-10', bay: '0001', row: '10', tier: '88', type: 'empty', text: '' },

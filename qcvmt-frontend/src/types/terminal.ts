@@ -11,15 +11,20 @@ export interface SequenceVO {
   text?: string
 }
 
+export interface BayCell {
+  row: string
+  tier: string
+  active: boolean
+}
+
 export interface TerminalView {
   bayName: string
   vesselName: string
   voyage: string
   qcAct: string
   reful: string
-  rows: number
-  tiers: number
   serverDateTime: string
+  cells: BayCell[]
   sequences: SequenceVO[]
 }
 

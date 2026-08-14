@@ -37,26 +37,6 @@ const sortRowsAroundCenter = (rowValues: number[]): number[] => {
   return [...leftEvens, ...rightPart]
 }
 
-const buildCenteredRows = (rowValues: number[], rowCount: number): number[] => {
-  const hasZero = rowValues.includes(0)
-  const hasOdd = rowValues.some((value) => value % 2 !== 0)
-
-  if (hasZero || hasOdd) {
-    return sortRowsAroundCenter(rowValues)
-  }
-
-  const normalizedCount = Math.max(rowCount, 1)
-  if (normalizedCount === 1) {
-    return [0]
-  }
-
-  const leftMaxEven = (normalizedCount - 1) * 2
-  const leftEvens = Array.from({ length: normalizedCount - 1 }, (_, index) => leftMaxEven - index * 2)
-  const rightOdds = Array.from({ length: normalizedCount - 1 }, (_, index) => index * 2 + 1)
-
-  return [...leftEvens, 0, ...rightOdds]
-}
-
 /**
  * Literal replica of CellDaoImpl#buildBay / #getFirstLine: a single flat
  * table, tiers descending top-to-bottom, one header row (Tier + row
@@ -66,38 +46,36 @@ const buildCenteredRows = (rowValues: number[], rowCount: number): number[] => {
  */
 export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
   const sequenceMap = new Map<string, (typeof data.sequences)[number]>()
+  const cellMap = new Map<string, (typeof data.cells)[number]>()
 
   for (const sequence of data.sequences) {
     const key = `${toInt(sequence.row)}-${toInt(sequence.tier)}`
     sequenceMap.set(key, sequence)
   }
 
+  for (const cell of data.cells) {
+    cellMap.set(`${toInt(cell.row)}-${toInt(cell.tier)}`, cell)
+  }
+
   const rowValues = Array.from(
     new Set(
-      data.sequences
+      data.cells
         .map((item) => toInt(item.row))
         .filter((value) => Number.isFinite(value) && value >= 0)
         .sort((a, b) => a - b),
     ),
   )
 
-  const rows =
-    rowValues.length > 0
-      ? buildCenteredRows(rowValues, Math.max(data.rows, 1))
-      : buildCenteredRows(Array.from({ length: Math.max(data.rows, 1) }, (_, index) => index * 2), Math.max(data.rows, 1))
+  const rows = sortRowsAroundCenter(rowValues)
 
   const tierValues = Array.from(
     new Set(
-      data.sequences
+      data.cells
         .map((item) => toInt(item.tier))
         .filter((value) => Number.isFinite(value) && value >= 0)
         .sort((a, b) => a - b),
     ),
   )
-
-  const fallbackTierCount = Math.max(data.tiers, 1)
-  const fallbackTiers = Array.from({ length: fallbackTierCount }, (_, index) => index * 2)
-  const tiers = tierValues.length > 0 ? tierValues : fallbackTiers
 
   const renderTierRows = (tiers: number[]) => {
     return tiers
@@ -109,7 +87,9 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
           {rows.map((row) => {
             const key = `${row}-${tier}`
             const sequence = sequenceMap.get(key)
-            return <BayCell key={key} item={sequence} type={sequence?.type} text={sequence?.text ?? ''} />
+            const cell = cellMap.get(key)
+            const type = sequence?.type ?? (cell ? (cell.active ? 'empty' : 'inactive') : 'blank')
+            return <BayCell key={key} item={sequence} type={type} text={sequence?.text ?? ''} />
           })}
         </tr>
       ))
@@ -130,7 +110,7 @@ export const BayPlanGrid = ({ data }: BayPlanGridProps) => {
         </thead>
 
         <tbody>
-          {renderTierRows(tiers)}
+          {renderTierRows(tierValues)}
         </tbody>
       </table>
     </div>

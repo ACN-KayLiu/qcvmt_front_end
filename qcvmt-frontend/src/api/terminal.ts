@@ -7,8 +7,6 @@ type CellType = TerminalView['sequences'][number]['type']
 interface BackendVessel {
   vesselId?: string
   bay?: string
-  rowEnd?: string
-  tierEnd?: string
 }
 
 interface BackendWorkQueueItem {
@@ -28,8 +26,7 @@ interface BackendWorkQueue {
   sequences?: BackendWorkQueueItem[]
 }
 
-interface BackendCellMatrixItem {
-  id?: number
+interface BackendBayCell {
   row?: string
   tier?: string
   active?: string
@@ -38,7 +35,7 @@ interface BackendCellMatrixItem {
 interface BackendTerminalData {
   vessels?: BackendVessel[]
   workQueue?: BackendWorkQueue
-  cellMatrix?: BackendCellMatrixItem[]
+  cells?: BackendBayCell[]
   vesselId?: string
   bay?: string | null
 }
@@ -48,24 +45,6 @@ interface BackendTerminalResponse {
   message?: string
   data?: BackendTerminalData
   timestamp?: string | number
-}
-
-const toInt = (value?: string): number => {
-  if (!value) {
-    return 0
-  }
-  const parsed = Number.parseInt(value, 10)
-  return Number.isNaN(parsed) ? 0 : parsed
-}
-
-const inferRows = (vessels: BackendVessel[]): number => {
-  const maxRow = vessels.reduce((acc, vessel) => Math.max(acc, toInt(vessel.rowEnd)), 0)
-  return Math.max(1, Math.floor(maxRow / 2) + 1)
-}
-
-const inferTiers = (vessels: BackendVessel[]): number => {
-  const maxTier = vessels.reduce((acc, vessel) => Math.max(acc, toInt(vessel.tierEnd)), 0)
-  return maxTier > 70 ? 8 : Math.max(1, Math.floor(maxTier / 2) + 1)
 }
 
 const mapQTypeToCellType = (qtype?: string): CellType => {
@@ -126,7 +105,15 @@ const transformTerminalData = (payload: BackendTerminalResponse, qcNum: string):
   const vessels = data.vessels || []
   const workQueue = data.workQueue || {}
   const workQueueItems = workQueue.sequences || []
-  const cellMatrix = data.cellMatrix || []
+  const cells = (data.cells || [])
+    .filter((cell): cell is Required<Pick<BackendBayCell, 'row' | 'tier'>> & BackendBayCell =>
+      Boolean(cell.row && cell.tier),
+    )
+    .map((cell) => ({
+      row: cell.row,
+      tier: cell.tier,
+      active: cell.active === '1',
+    }))
 
   const queueSequences = workQueueItems.map((item, index) => ({
     id: `queue-${index}-${item.currentPosSlot || item.plannedPosSlot || 'cell'}`,
@@ -144,29 +131,15 @@ const transformTerminalData = (payload: BackendTerminalResponse, qcNum: string):
   const voyage = workQueue.vesselId || ''
   const qcFromMessage = extractQcFromMessage(payload.message)
 
-  const hasQueueSequences = queueSequences.length > 0
-
-  const matrixFallbackSequences = hasQueueSequences
-    ? []
-    : cellMatrix.map((item) => ({
-        id: `matrix-${item.id || `${item.row || '0'}-${item.tier || '0'}`}`,
-        bay: data.bay || '',
-        row: item.row || '0',
-        tier: item.tier || '0',
-        type: (item.active === '1' ? 'empty' : 'inactive') as CellType,
-        text: '',
-      }))
-
   return {
     bayName,
     vesselName,
     voyage,
     qcAct: qcFromMessage || qcNum,
     reful: '',
-    rows: inferRows(vessels),
-    tiers: hasQueueSequences ? 0 : inferTiers(vessels),
     serverDateTime: String(payload.timestamp || new Date().toISOString()),
-    sequences: hasQueueSequences ? queueSequences : matrixFallbackSequences,
+    cells,
+    sequences: queueSequences,
   }
 }
 
