@@ -2,11 +2,14 @@ import { create } from 'zustand'
 import {
   authApi,
   clearAuthTokens,
+  getStoredSelectedQc,
   getStoredAuthTokens,
   saveAuthTokens,
+  saveSelectedQc,
   type AuthMeResponse,
 } from '@/api/auth'
 import type { Role, User } from '@/types/user'
+import { toQcId } from '@/utils/qc'
 
 interface AuthState {
   user: User | null
@@ -64,14 +67,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (username, password, qcid) => {
     set({ loading: true })
     try {
-      const response = await authApi.login({ username, password })
+      const selectedQc = toQcId(qcid)
+      const response = await authApi.login({ username, password, qcid: selectedQc })
       saveAuthTokens(response.data)
+      saveSelectedQc(selectedQc)
 
       if (response.data.user) {
         set({
           user: toUser(response.data.user),
           roles: collectRoles(response.data.user),
-          qcid: qcid,
+          qcid: selectedQc,
           isAuthenticated: true,
           loading: false,
         })
@@ -107,10 +112,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ loading: true })
     try {
       const response = await authApi.me()
+      const selectedQc = getStoredSelectedQc() || toQcId(response.data.qcid || '')
+      if (selectedQc) {
+        saveSelectedQc(selectedQc)
+      }
       set({
         user: toUser(response.data),
         roles: collectRoles(response.data),
-        qcid: response.data.qcid || '',
+        qcid: selectedQc,
         isAuthenticated: true,
         loading: false,
       })

@@ -7,6 +7,7 @@ const STEP_INTERVAL = 5_000
 
 export const usePolling = (qcNum: string) => {
   const fetchTerminalData = useTerminalStore((state) => state.fetchTerminalData)
+  const clearData = useTerminalStore((state) => state.clearData)
   const setPolling = useTerminalStore((state) => state.setPolling)
   const polling = useTerminalStore((state) => state.polling)
 
@@ -43,6 +44,7 @@ export const usePolling = (qcNum: string) => {
     }
 
     const startPolling = async () => {
+      clearData()
       setPolling({ running: true, intervalMs: BASE_INTERVAL, timeoutCount: 0 })
       abortRef.current = new AbortController()
       try {
@@ -64,7 +66,7 @@ export const usePolling = (qcNum: string) => {
       }
       setPolling({ running: false })
     }
-  }, [fetchTerminalData, qcNum, scheduleNext, setPolling])
+  }, [clearData, fetchTerminalData, qcNum, scheduleNext, setPolling])
 
   return polling
 }

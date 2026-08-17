@@ -4,6 +4,7 @@ import type { ApiResponse } from '@/api/types'
 export interface LoginRequest {
   username: string
   password: string
+  qcid: string
 }
 
 export interface AuthMeResponse {
@@ -42,6 +43,7 @@ export interface StoredAuthTokens {
 const ACCESS_TOKEN_KEY = 'qcvmt_access_token'
 const REFRESH_TOKEN_KEY = 'qcvmt_refresh_token'
 const TOKEN_TYPE_KEY = 'qcvmt_token_type'
+const SELECTED_QC_KEY = 'qcvmt_selected_qc'
 
 export const saveAuthTokens = (payload: LoginResponse): void => {
   localStorage.setItem(ACCESS_TOKEN_KEY, payload.accessToken)
@@ -65,7 +67,12 @@ export const clearAuthTokens = (): void => {
   localStorage.removeItem(ACCESS_TOKEN_KEY)
   localStorage.removeItem(REFRESH_TOKEN_KEY)
   localStorage.removeItem(TOKEN_TYPE_KEY)
+  localStorage.removeItem(SELECTED_QC_KEY)
 }
+
+export const saveSelectedQc = (qcid: string): void => localStorage.setItem(SELECTED_QC_KEY, qcid)
+
+export const getStoredSelectedQc = (): string => localStorage.getItem(SELECTED_QC_KEY) || ''
 
 export const authApi = {
   login: (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => apiClient.post('/auth/login', data),

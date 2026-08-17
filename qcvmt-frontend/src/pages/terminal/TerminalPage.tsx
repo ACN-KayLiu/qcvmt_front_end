@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { Button } from 'antd'
+import { useEffect, useMemo } from 'react'
 import { BayPlanGrid } from '@/components/bay/BayPlanGrid'
 import { TerminalBanner } from '@/components/bay/TerminalBanner'
 import { PageState } from '@/components/common/PageState'
@@ -8,6 +7,7 @@ import { useServerClock } from '@/hooks/useServerClock'
 import { useAuthStore } from '@/stores/auth'
 import { useTerminalStore } from '@/stores/terminal'
 import { MOCK_TERMINAL_DATA } from '@/utils/mockTerminalData'
+import { toQcId } from '@/utils/qc'
 
 const TerminalPage = () => {
   const qcid = useAuthStore((state) => state.qcid)
@@ -16,18 +16,11 @@ const TerminalPage = () => {
   const error = useTerminalStore((state) => state.error)
   const signalStatus = useTerminalStore((state) => state.signalStatus)
   const setData = useTerminalStore((state) => state.setData)
-  const activeQc = useMemo(() => qcid.trim().toUpperCase(), [qcid])
-  const polling = usePolling(activeQc)
+  const activeQc = useMemo(() => toQcId(qcid), [qcid])
+  usePolling(activeQc)
   const clock = useServerClock(data?.serverDateTime)
-  const prevActiveQcRef = useRef(activeQc)
-
-  useEffect(() => {
-    const prevActiveQc = prevActiveQcRef.current
-    if (prevActiveQc && !activeQc) {
-      useTerminalStore.getState().clearData()
-    }
-    prevActiveQcRef.current = activeQc
-  }, [activeQc])
+  const isInitialLoading = loading && !data
+  const blockingError = data ? null : error
 
   useEffect(() => {
     if (!activeQc && !data) {
@@ -40,15 +33,7 @@ const TerminalPage = () => {
       <TerminalBanner data={data} dateTime={clock.dateTime} signalStatus={signalStatus} />
 
       <div id="tableList">
-        <div className="terminal-polling-status" aria-live="polite">
-          {activeQc ? `QC ${activeQc} | ${polling.intervalMs / 1000}s${polling.running ? '' : ' (paused)'}` : ''}
-        </div>
-        <div className="terminal-demo-action">
-          <Button size="small" type="dashed" onClick={() => setData(MOCK_TERMINAL_DATA)}>
-            Demo
-          </Button>
-        </div>
-        <PageState loading={loading} error={error} isEmpty={!data} />
+        <PageState loading={isInitialLoading} error={blockingError} isEmpty={!data && !isInitialLoading} />
         {data ? <BayPlanGrid data={data} /> : null}
       </div>
     </div>

@@ -14,6 +14,8 @@ interface TerminalState {
   fetchTerminalData: (qcNum: string, signal?: AbortSignal) => Promise<void>
 }
 
+let requestGeneration = 0
+
 export const useTerminalStore = create<TerminalState>((set) => ({
   data: null,
   signalStatus: 'red',
@@ -21,7 +23,10 @@ export const useTerminalStore = create<TerminalState>((set) => ({
   loading: false,
   error: null,
   setData: (data) => set({ data, signalStatus: 'green', loading: false, error: null }),
-  clearData: () => set({ data: null, signalStatus: 'red', loading: false, error: null }),
+  clearData: () => {
+    requestGeneration += 1
+    set({ data: null, signalStatus: 'red', loading: false, error: null })
+  },
   setPolling: (next) =>
     set((state) => ({
       polling: {
@@ -38,9 +43,13 @@ export const useTerminalStore = create<TerminalState>((set) => ({
       return
     }
 
+    const generation = ++requestGeneration
     set((state) => ({ ...state, loading: true, error: null }))
     try {
       const response = await terminalApi.query(qcNum, signal)
+      if (generation !== requestGeneration) {
+        return
+      }
       set((state) => ({
         ...state,
         data: response.data,
@@ -48,6 +57,9 @@ export const useTerminalStore = create<TerminalState>((set) => ({
         loading: false,
       }))
     } catch (error) {
+      if (generation !== requestGeneration) {
+        return
+      }
       if ((error as Error).name === 'CanceledError') {
         return
       }

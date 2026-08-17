@@ -1,6 +1,7 @@
 import { apiClient, requestWithRetry } from '@/lib/axios'
 import type { ApiResponse } from '@/api/types'
 import type { BayCellStatus, TerminalView } from '@/types/terminal'
+import { toQcId } from '@/utils/qc'
 
 interface BackendVessel {
   vesselId?: string
@@ -131,7 +132,7 @@ export const __testing__ = {
 
 export const terminalApi = {
   query: async (qcNum: string, signal?: AbortSignal): Promise<ApiResponse<TerminalView>> => {
-    const normalizedQc = qcNum.trim().toUpperCase()
+    const normalizedQc = toQcId(qcNum)
     if (!normalizedQc) {
       return Promise.reject(new Error('QC number is required'))
     }

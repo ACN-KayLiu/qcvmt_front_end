@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button, Card, Form, Input, Space, Typography, message } from 'antd'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth'
+import { normalizeQcDigits } from '@/utils/qc'
 
 interface LoginFormValues {
   username: string
@@ -103,9 +104,15 @@ const LoginPage = () => {
                 <Form.Item
                   label="QC Number"
                   name="qcid"
-                  rules={[{ required: true, message: 'QC number is required' }]}
+                  getValueFromEvent={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    normalizeQcDigits(event.target.value)
+                  }
+                  rules={[
+                    { required: true, message: 'QC number is required' },
+                    { pattern: /^\d+$/, message: 'Enter the QC number only' },
+                  ]}
                 >
-                  <Input placeholder="e.g., QC01" autoComplete="off" />
+                  <Input addonBefore="QC" placeholder="16" inputMode="numeric" autoComplete="off" />
                 </Form.Item>
 
                 <Button type="primary" htmlType="submit" loading={submitting} block>
