@@ -12,8 +12,18 @@ export const MOCK_TERMINAL_DATA: TerminalView = {
   reful: 'No',
   serverDateTime: new Date().toISOString(),
   cells: DEMO_ROWS.flatMap((row) =>
-    DEMO_TIERS.map((tier) => ({ row, tier, active: true })),
+    DEMO_TIERS.map((tier) => ({
+      row,
+      tier,
+      active: true,
+      status: 'empty' as const,
+      text: '',
+      dg: false,
+      rowHighlighted: false,
+    })),
   ),
+  remainingContainers: 0,
+  colors: {},
   sequences: [
     // Keep row headers deterministic: 10 08 06 04 02 00 01 03 05 07 09
     { id: 'seed-10', bay: '0001', row: '10', tier: '88', type: 'empty', text: '' },

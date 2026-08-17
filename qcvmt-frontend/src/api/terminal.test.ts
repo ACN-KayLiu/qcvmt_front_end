@@ -2,17 +2,17 @@ import { describe, expect, it } from 'vitest'
 import { __testing__ } from '@/api/terminal'
 
 describe('terminal bay layout transform', () => {
-  it('keeps every backend bay cell when queue data exists', () => {
+  it('uses backend-rendered cell status and text without inferring from the queue', () => {
     const result = __testing__.transformTerminalData(
       {
         data: {
           bay: '01',
           vessels: [{ vesselId: 'V1', bay: '01', rowEnd: '10', tierEnd: '84' }],
           cells: [
-            { row: '01', tier: '82', active: '1' },
-            { row: '03', tier: '82', active: '1' },
-            { row: '01', tier: '84', active: '1' },
-            { row: '03', tier: '84', active: '1' },
+            { row: '01', tier: '82', active: '1', status: 'complexunit', text: 'ORX', dg: false },
+            { row: '03', tier: '82', active: '1', status: 'twenty', text: '20', dg: false },
+            { row: '01', tier: '84', active: '1', status: 'refuel', text: '', dg: false },
+            { row: '03', tier: '84', active: '1', status: 'empty', text: '', dg: false },
           ],
           workQueue: {
             qType: 'DISCH',
@@ -30,10 +30,11 @@ describe('terminal bay layout transform', () => {
     )
 
     expect(result.cells).toEqual([
-      { row: '01', tier: '82', active: true },
-      { row: '03', tier: '82', active: true },
-      { row: '01', tier: '84', active: true },
-      { row: '03', tier: '84', active: true },
+      { row: '01', tier: '82', active: true, status: 'complexunit', text: 'ORX', dg: false, rowHighlighted: false },
+      { row: '03', tier: '82', active: true, status: 'twenty', text: '20', dg: false, rowHighlighted: false },
+      { row: '01', tier: '84', active: true, status: 'refuel', text: '', dg: false, rowHighlighted: false },
+      { row: '03', tier: '84', active: true, status: 'empty', text: '', dg: false, rowHighlighted: false },
     ])
+    expect(result.cells.map((cell) => cell.text)).not.toContain('010184')
   })
 })

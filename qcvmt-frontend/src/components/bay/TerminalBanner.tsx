@@ -14,8 +14,7 @@ interface TerminalBannerProps {
 }
 
 const remainingCount = (data: TerminalView | null): number => {
-  if (!data) return 0
-  return data.sequences.filter((s) => s.type === 'discharge' || s.type === 'load').length
+  return data?.remainingContainers ?? 0
 }
 
 /**

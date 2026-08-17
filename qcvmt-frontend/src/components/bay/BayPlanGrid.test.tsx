@@ -13,14 +13,13 @@ describe('BayPlanGrid', () => {
       reful: '',
       serverDateTime: '',
       cells: [
-        { row: '02', tier: '82', active: true },
-        { row: '03', tier: '82', active: true },
-        { row: '02', tier: '84', active: true },
-        { row: '03', tier: '84', active: true },
+        { row: '02', tier: '84', active: true, status: 'empty', text: '', dg: false, rowHighlighted: true },
+        { row: '03', tier: '84', active: true, status: 'refuel', text: '', dg: false, rowHighlighted: false },
+        { row: '02', tier: '82', active: true, status: 'load', text: 'OR', dg: false, rowHighlighted: true },
+        { row: '03', tier: '82', active: true, status: 'twenty', text: '20', dg: false, rowHighlighted: false },
       ],
-      sequences: [
-        { id: 'one', bay: '17', row: '02', tier: '82', type: 'load' },
-      ],
+      remainingContainers: 1,
+      colors: { load: '#123456', inactive: '#eeeeee' },
     }
 
     render(<BayPlanGrid data={data} />)
@@ -29,5 +28,8 @@ describe('BayPlanGrid', () => {
     expect(headers.map((header) => header.textContent)).toEqual(['Tier', '02', '03'])
     expect(screen.getByText('84')).toBeInTheDocument()
     expect(screen.queryByText('00')).not.toBeInTheDocument()
+    expect(screen.getByText('OR').closest('td')?.className).toContain('load')
+    expect(screen.getByText('20')).toBeInTheDocument()
+    expect(screen.getByRole('grid')).toHaveStyle('--bay-load-color: #123456')
   })
 })

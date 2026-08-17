@@ -1,8 +1,6 @@
 import { apiClient, requestWithRetry } from '@/lib/axios'
 import type { ApiResponse } from '@/api/types'
-import type { TerminalView } from '@/types/terminal'
-
-type CellType = TerminalView['sequences'][number]['type']
+import type { BayCellStatus, TerminalView } from '@/types/terminal'
 
 interface BackendVessel {
   vesselId?: string
@@ -30,12 +28,24 @@ interface BackendBayCell {
   row?: string
   tier?: string
   active?: string
+  status?: string
+  text?: string
+  dg?: boolean
+  rowHighlighted?: boolean
+}
+
+interface BackendColorSet {
+  boxcase?: string
+  color?: string
 }
 
 interface BackendTerminalData {
   vessels?: BackendVessel[]
   workQueue?: BackendWorkQueue
   cells?: BackendBayCell[]
+  colorSets?: BackendColorSet[]
+  remainContainers?: number
+  refueling?: boolean
   vesselId?: string
   bay?: string | null
 }
@@ -47,49 +57,21 @@ interface BackendTerminalResponse {
   timestamp?: string | number
 }
 
-const mapQTypeToCellType = (qtype?: string): CellType => {
-  const normalized = (qtype || '').toUpperCase()
-  if (normalized === 'DISCH') {
-    return 'discharge'
-  }
-  if (normalized === 'LOAD') {
-    return 'load'
-  }
-  return 'empty'
-}
+const CELL_STATUSES: BayCellStatus[] = [
+  'inactive',
+  'empty',
+  'discharge',
+  'load',
+  'complexunit',
+  'twenty',
+  'refuel',
+]
 
-const extractTierFromSlot = (slot?: string): string => {
-  if (!slot) {
-    return '82'
+const parseCellStatus = (status?: string): BayCellStatus => {
+  if (CELL_STATUSES.includes(status as BayCellStatus)) {
+    return status as BayCellStatus
   }
-
-  const normalized = slot.trim().toUpperCase()
-  const match = normalized.match(/(\d{6})(?:\.\d+)?$/)
-  if (!match) {
-    return '82'
-  }
-
-  const sixDigits = match[1]
-  return sixDigits.slice(-2)
-}
-
-// pos_slot is BBRRTT: chars 0-1 = bay, 2-3 = row, 4-5 = tier. This mirrors the
-// legacy CellDaoImpl parsing (current_pos_slot.substring(2, 4)). Note that
-// qrow (a work-queue ordering field) is NOT the physical row and must not be
-// used for grid placement.
-const extractRowFromSlot = (slot?: string): string => {
-  if (!slot) {
-    return '0'
-  }
-
-  const normalized = slot.trim().toUpperCase()
-  const match = normalized.match(/(\d{6})(?:\.\d+)?$/)
-  if (!match) {
-    return '0'
-  }
-
-  const sixDigits = match[1]
-  return sixDigits.slice(2, 4)
+  throw new Error(`Invalid bay cell status returned by backend: ${status || '<empty>'}`)
 }
 
 const extractQcFromMessage = (message?: string): string => {
@@ -104,7 +86,6 @@ const transformTerminalData = (payload: BackendTerminalResponse, qcNum: string):
   const data = payload.data || {}
   const vessels = data.vessels || []
   const workQueue = data.workQueue || {}
-  const workQueueItems = workQueue.sequences || []
   const cells = (data.cells || [])
     .filter((cell): cell is Required<Pick<BackendBayCell, 'row' | 'tier'>> & BackendBayCell =>
       Boolean(cell.row && cell.tier),
@@ -113,18 +94,18 @@ const transformTerminalData = (payload: BackendTerminalResponse, qcNum: string):
       row: cell.row,
       tier: cell.tier,
       active: cell.active === '1',
+      status: parseCellStatus(cell.status),
+      text: cell.text || '',
+      dg: Boolean(cell.dg),
+      rowHighlighted: Boolean(cell.rowHighlighted),
     }))
-
-  const queueSequences = workQueueItems.map((item, index) => ({
-    id: `queue-${index}-${item.currentPosSlot || item.plannedPosSlot || 'cell'}`,
-    bay: item.bay || data.bay || '',
-    row: extractRowFromSlot(item.currentPosSlot || item.plannedPosSlot),
-    tier: extractTierFromSlot(item.currentPosSlot || item.plannedPosSlot),
-    type: mapQTypeToCellType(item.qtype || workQueue.qType),
-    text: item.currentPosSlot || item.plannedPosSlot || '',
-    isDg: Boolean(item.dg),
-    isCurrent: (item.status || '').toUpperCase() === 'PLANNED' && index === 0,
-  }))
+  const colors = Object.fromEntries(
+    (data.colorSets || [])
+      .filter((item): item is Required<Pick<BackendColorSet, 'boxcase' | 'color'>> & BackendColorSet =>
+        Boolean(item.boxcase && item.color),
+      )
+      .map((item) => [item.boxcase.toLowerCase(), item.color]),
+  ) as Partial<Record<BayCellStatus, string>>
 
   const vesselName = vessels[0]?.vesselId || data.vesselId || ''
   const bayName = data.bay || vessels[0]?.bay || '-'
@@ -136,10 +117,11 @@ const transformTerminalData = (payload: BackendTerminalResponse, qcNum: string):
     vesselName,
     voyage,
     qcAct: qcFromMessage || qcNum,
-    reful: '',
+    reful: data.refueling ? 'Yes' : 'No',
     serverDateTime: String(payload.timestamp || new Date().toISOString()),
     cells,
-    sequences: queueSequences,
+    remainingContainers: data.remainContainers || 0,
+    colors,
   }
 }
 

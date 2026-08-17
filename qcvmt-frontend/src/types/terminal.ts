@@ -1,4 +1,12 @@
 export type SignalStatus = 'green' | 'red'
+export type BayCellStatus =
+  | 'inactive'
+  | 'empty'
+  | 'discharge'
+  | 'load'
+  | 'complexunit'
+  | 'twenty'
+  | 'refuel'
 
 export interface SequenceVO {
   id: string
@@ -15,6 +23,10 @@ export interface BayCell {
   row: string
   tier: string
   active: boolean
+  status: BayCellStatus
+  text: string
+  dg: boolean
+  rowHighlighted: boolean
 }
 
 export interface TerminalView {
@@ -25,7 +37,9 @@ export interface TerminalView {
   reful: string
   serverDateTime: string
   cells: BayCell[]
-  sequences: SequenceVO[]
+  sequences?: SequenceVO[]
+  remainingContainers: number
+  colors: Partial<Record<BayCellStatus, string>>
 }
 
 export interface PollingState {

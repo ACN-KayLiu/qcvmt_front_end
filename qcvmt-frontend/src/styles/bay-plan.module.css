@@ -56,7 +56,7 @@
 }
 
 .inactive {
-  background-color: #ffffff;
+  background-color: var(--bay-inactive-color, #ffffff);
 }
 
 .unable {
@@ -64,32 +64,32 @@
 }
 
 .empty {
-  background-color: #ffffff;
+  background-color: var(--bay-empty-color, #ffffff);
 }
 
 .discharge {
-  background-color: #078f27;
+  background-color: var(--bay-discharge-color, #078f27);
   color: #ffffff;
 }
 
 .load {
-  background-color: #f37012;
+  background-color: var(--bay-load-color, #f37012);
   color: #ffffff;
 }
 
 .complexunit {
-  background-color: #7443c9;
+  background-color: var(--bay-complexunit-color, #7443c9);
   color: #ffffff;
 }
 
 .twenty {
   color: #ff0000 !important;
-  background-color: #ffffff;
+  background-color: var(--bay-inactive-color, #ffffff);
 }
 
 .refuel {
-  background-color: #00810d;
-  color: #ffffff;
+  background-color: #ff0000;
+  color: #ff0000 !important;
 }
 
 .dgind {
