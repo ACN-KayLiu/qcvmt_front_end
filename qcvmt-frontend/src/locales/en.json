@@ -4,6 +4,7 @@
   "nav.dashboard": "Dashboard",
   "auth.login": "Login",
   "auth.logout": "Logout",
+  "admin.settings": "Settings",
   "terminal.signal.green": "Connected",
   "terminal.signal.red": "Disconnected",
   "terminal.banner.title": "Modern Terminals",

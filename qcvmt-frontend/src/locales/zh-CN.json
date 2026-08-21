@@ -4,6 +4,7 @@
   "nav.dashboard": "管理首页",
   "auth.login": "登录",
   "auth.logout": "退出登录",
+  "admin.settings": "设置",
   "terminal.signal.green": "连接正常",
   "terminal.signal.red": "连接异常",
   "terminal.banner.title": "现代化码头",

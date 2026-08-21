@@ -35,6 +35,31 @@ describe('selected login QC', () => {
     vi.clearAllMocks()
   })
 
+  it('normalizes backend admin roles for frontend permissions', async () => {
+    vi.mocked(authApi.login).mockResolvedValue({
+      code: 200,
+      message: 'OK',
+      timestamp: Date.now(),
+      data: {
+        accessToken: 'access',
+        refreshToken: 'refresh',
+        user: {
+          id: 2,
+          username: 'admin',
+          qcid: 'QC16',
+          localRole: 'ADMIN',
+          roles: ['ROLE_qcvmt-admin'],
+          admin: true,
+        },
+      },
+    })
+
+    await useAuthStore.getState().login('admin', 'password', '16')
+
+    expect(useAuthStore.getState().roles).toContain('qcvmt-admin')
+    expect(useAuthStore.getState().user?.role).toBe('qcvmt-admin')
+  })
+
   it('keeps QC16 across hydration even when the user master is QC58', async () => {
     vi.mocked(authApi.login).mockResolvedValue({
       code: 200,

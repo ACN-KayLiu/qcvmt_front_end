@@ -1,9 +1,10 @@
-import { LogoutOutlined } from '@ant-design/icons'
+import { LogoutOutlined, SettingOutlined } from '@ant-design/icons'
 import { Button } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { SignalIndicator } from '@/components/bay/SignalIndicator'
 import { useAuthStore } from '@/stores/auth'
+import { usePermission } from '@/hooks/usePermission'
 import { useTerminalStore } from '@/stores/terminal'
 import type { SignalStatus, TerminalView } from '@/types/terminal'
 
@@ -27,6 +28,7 @@ export const TerminalBanner = ({ data, dateTime, signalStatus }: TerminalBannerP
   const { t } = useTranslation()
   const navigate = useNavigate()
   const logout = useAuthStore((state) => state.logout)
+  const { isAdmin } = usePermission()
   const clearData = useTerminalStore((state) => state.clearData)
   const refueling = Boolean(data?.reful)
 
@@ -38,15 +40,28 @@ export const TerminalBanner = ({ data, dateTime, signalStatus }: TerminalBannerP
 
   return (
     <div id="headerInfo">
-      <Button
-        size="small"
-        type="text"
-        className="terminal-banner-logout"
-        icon={<LogoutOutlined />}
-        onClick={() => void handleLogout()}
-      >
-        {t('auth.logout')}
-      </Button>
+      <div className="terminal-banner-actions">
+        {isAdmin && (
+          <Button
+            size="small"
+            type="text"
+            className="terminal-banner-action"
+            icon={<SettingOutlined />}
+            onClick={() => navigate('/admin')}
+          >
+            {t('admin.settings')}
+          </Button>
+        )}
+        <Button
+          size="small"
+          type="text"
+          className="terminal-banner-action"
+          icon={<LogoutOutlined />}
+          onClick={() => void handleLogout()}
+        >
+          {t('auth.logout')}
+        </Button>
+      </div>
       <table className="terminal-banner-table">
         <colgroup>
           <col style={{ width: '25%' }} />

@@ -1,10 +1,11 @@
-import { DownOutlined, GlobalOutlined, LogoutOutlined, MoonOutlined, SunOutlined } from '@ant-design/icons'
+import { DownOutlined, GlobalOutlined, LogoutOutlined, MoonOutlined, SettingOutlined, SunOutlined } from '@ant-design/icons'
 import { Button, Dropdown, Typography } from 'antd'
 import type { MenuProps } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
+import { usePermission } from '@/hooks/usePermission'
 
 const LANG_LABELS: Record<string, string> = {
   en: 'English',
@@ -24,6 +25,7 @@ export const AppHeader = () => {
   const toggleTheme = useAppStore((state) => state.toggleTheme)
   const themeMode = useAppStore((state) => state.themeMode)
   const logout = useAuthStore((state) => state.logout)
+  const { isAdmin } = usePermission()
 
   const handleLogout = async () => {
     await logout()
@@ -54,6 +56,11 @@ export const AppHeader = () => {
           onClick={toggleTheme}
           aria-label="Toggle theme"
         />
+        {isAdmin && (
+          <Button icon={<SettingOutlined />} onClick={() => navigate('/admin')}>
+            {t('admin.settings')}
+          </Button>
+        )}
         <Button icon={<LogoutOutlined />} onClick={() => void handleLogout()}>
           {t('auth.logout')}
         </Button>

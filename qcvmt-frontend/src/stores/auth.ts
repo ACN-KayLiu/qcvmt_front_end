@@ -28,11 +28,25 @@ const isRole = (value: string): value is Role => {
   return value === 'qcvmt-admin' || value === 'qcvmt-user' || value === 'qcvmt-limited'
 }
 
-const toRole = (localRole?: string, roles?: string[]): Role => {
-  if (localRole && isRole(localRole)) {
-    return localRole
+const normalizeRole = (value: string): string => {
+  const role = value.replace(/^ROLE_/, '')
+  if (role === 'ADMIN') return 'qcvmt-admin'
+  if (role === 'USER') return 'qcvmt-user'
+  if (role === 'LIMITED') return 'qcvmt-limited'
+  return role
+}
+
+const toRole = (localRole?: string, roles?: string[], admin?: boolean): Role => {
+  if (localRole && isRole(normalizeRole(localRole))) {
+    return normalizeRole(localRole) as Role
   }
-  const matched = roles?.find(isRole)
+  const matched = roles?.map(normalizeRole).find(isRole)
+  if (matched) {
+    return matched
+  }
+  if (admin) {
+    return 'qcvmt-admin'
+  }
   return matched || DEFAULT_ROLE
 }
 
@@ -43,17 +57,20 @@ const toUser = (me: AuthMeResponse): User => {
     username,
     qcid: me.qcid || '',
     name: username,
-    role: toRole(me.localRole, me.roles),
+    role: toRole(me.localRole, me.roles, me.admin),
   }
 }
 
 const collectRoles = (me: AuthMeResponse): string[] => {
   const roleSet = new Set<string>()
   if (me.localRole) {
-    roleSet.add(me.localRole)
+    roleSet.add(normalizeRole(me.localRole))
   }
   for (const role of me.roles || []) {
-    roleSet.add(role)
+    roleSet.add(normalizeRole(role))
+  }
+  if (me.admin) {
+    roleSet.add('qcvmt-admin')
   }
   return Array.from(roleSet)
 }

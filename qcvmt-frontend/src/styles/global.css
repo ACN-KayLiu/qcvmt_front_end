@@ -243,11 +243,16 @@ a {
   white-space: nowrap;
 }
 
-.terminal-banner-logout.ant-btn {
+.terminal-banner-actions {
   position: absolute;
   top: 8px;
   right: 10px;
   z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+
+.terminal-banner-action.ant-btn {
   height: 22px;
   padding-inline: 6px !important;
   font-size: 12px;
@@ -258,8 +263,8 @@ a {
   opacity: 0.72;
 }
 
-.terminal-banner-logout.ant-btn:hover,
-.terminal-banner-logout.ant-btn:focus-visible {
+.terminal-banner-action.ant-btn:hover,
+.terminal-banner-action.ant-btn:focus-visible {
   color: #ffffff !important;
   border-color: rgba(255, 255, 255, 0.7) !important;
   background: rgba(255, 255, 255, 0.1) !important;
