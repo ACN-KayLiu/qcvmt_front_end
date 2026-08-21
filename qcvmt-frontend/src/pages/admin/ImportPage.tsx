@@ -7,7 +7,7 @@ import { AdminPageCard } from '@/components/common/AdminPageCard'
 import { usePageMessage } from '@/hooks/usePageMessage'
 
 const MAX_FILE_SIZE_MB = 10
-const ACCEPTED_EXTENSIONS = ['.xlsx', '.xls', '.csv']
+const ACCEPTED_EXTENSIONS = ['.xlsx', '.xls']
 
 const ImportPage = () => {
   const { contextHolder, notifyError, notifySuccess, notifyWarning } = usePageMessage()
@@ -48,9 +48,7 @@ const ImportPage = () => {
     try {
       const response = await importExportApi.importVessel(fileList[0].originFileObj)
       const result = response.data
-      notifySuccess(
-        `Import completed: total ${result.total}, success ${result.success}, failed ${result.failed}`,
-      )
+      notifySuccess(`Import completed: imported ${result.imported} vessel records`)
       setFileList([])
     } catch (error) {
       notifyError(error, 'Import failed')
@@ -64,7 +62,7 @@ const ImportPage = () => {
       {contextHolder}
       <AdminPageCard
         title="Import Vessel Data"
-        subtitle="Upload one vessel data file. Allowed formats: .xlsx, .xls, .csv. Max size: 10MB."
+        subtitle="Upload one vessel data file. Allowed formats: .xlsx, .xls. Max size: 10MB."
       >
 
         <Upload {...uploadProps}>

@@ -6,21 +6,18 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { vesselApi } from '@/api/vessel'
 import { AdminPageCard } from '@/components/common/AdminPageCard'
 import { PageFormActions } from '@/components/common/PageFormActions'
-import { RangeNumberFields } from '@/components/common/RangeNumberFields'
 import { usePageMessage } from '@/hooks/usePageMessage'
 import type { CreateVesselRequest, UpdateVesselRequest, Vessel } from '@/types/vessel'
 import { vesselFormSchema } from '@/utils/validators'
 
 type VesselFormData = {
   vesselId: string
-  vesselName: string
   deckHold: Vessel['deckHold']
-  bayStart: number
-  bayEnd: number
-  rowStart: number
-  rowEnd: number
-  tierStart: number
-  tierEnd: number
+  bay: string
+  rowStart: string
+  rowEnd: string
+  tierStart: string
+  tierEnd: string
 }
 
 const deckHoldOptions = [
@@ -47,14 +44,12 @@ const VesselForm = () => {
     resolver,
     defaultValues: {
       vesselId: '',
-      vesselName: '',
       deckHold: 'DECK',
-      bayStart: 0,
-      bayEnd: 0,
-      rowStart: 0,
-      rowEnd: 0,
-      tierStart: 0,
-      tierEnd: 0,
+      bay: '',
+      rowStart: '',
+      rowEnd: '',
+      tierStart: '',
+      tierEnd: '',
     },
   })
 
@@ -83,6 +78,12 @@ const VesselForm = () => {
     try {
       if (isEdit && id) {
         const payload: UpdateVesselRequest = values
+        const payload: UpdateVesselRequest = {
+          rowStart: values.rowStart,
+          rowEnd: values.rowEnd,
+          tierStart: values.tierStart,
+          tierEnd: values.tierEnd,
+        }
         await vesselApi.update(Number(id), payload)
         notifySuccess('Vessel updated')
       } else {
@@ -121,18 +122,6 @@ const VesselForm = () => {
           </Form.Item>
 
           <Form.Item
-            label="Vessel Name"
-            validateStatus={errors.vesselName ? 'error' : ''}
-            help={errors.vesselName?.message}
-          >
-            <Controller
-              name="vesselName"
-              control={control}
-              render={({ field }) => <Input {...field} />}
-            />
-          </Form.Item>
-
-          <Form.Item
             label="Deck/Hold"
             validateStatus={errors.deckHold ? 'error' : ''}
             help={errors.deckHold?.message}
@@ -150,7 +139,33 @@ const VesselForm = () => {
             />
           </Form.Item>
 
-          <RangeNumberFields control={control} errors={errors} />
+          <Form.Item label="Bay" validateStatus={errors.bay ? 'error' : ''} help={errors.bay?.message}>
+            <Controller name="bay" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
+
+          <Form.Item
+            label="Row Start"
+            validateStatus={errors.rowStart ? 'error' : ''}
+            help={errors.rowStart?.message}
+          >
+            <Controller name="rowStart" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
+
+          <Form.Item label="Row End" validateStatus={errors.rowEnd ? 'error' : ''} help={errors.rowEnd?.message}>
+            <Controller name="rowEnd" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
+
+          <Form.Item
+            label="Tier Start"
+            validateStatus={errors.tierStart ? 'error' : ''}
+            help={errors.tierStart?.message}
+          >
+            <Controller name="tierStart" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
+
+          <Form.Item label="Tier End" validateStatus={errors.tierEnd ? 'error' : ''} help={errors.tierEnd?.message}>
+            <Controller name="tierEnd" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
 
           <PageFormActions
             submitText={isEdit ? 'Save Changes' : 'Create Vessel'}

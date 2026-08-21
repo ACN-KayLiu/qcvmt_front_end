@@ -12,16 +12,14 @@ import { createUserSchema, updateUserSchema } from '@/utils/validators'
 
 type UserFormData = {
   username: string
-  password?: string
   qcid: string
-  name: string
   role: User['role']
+  parent?: string
 }
 
 const roleOptions = [
-  { label: 'Admin', value: 'qcvmt-admin' },
-  { label: 'User', value: 'qcvmt-user' },
-  { label: 'Limited', value: 'qcvmt-limited' },
+  { label: 'Admin', value: 'ADMIN' },
+  { label: 'User', value: 'USER' },
 ] as const
 
 const UserForm = () => {
@@ -46,10 +44,9 @@ const UserForm = () => {
     resolver,
     defaultValues: {
       username: '',
-      password: '',
       qcid: '',
-      name: '',
       role: 'qcvmt-user',
+      parent: '',
     },
   })
 
@@ -66,9 +63,8 @@ const UserForm = () => {
         reset({
           username: user.username,
           qcid: user.qcid,
-          name: user.name,
           role: user.role,
-          password: '',
+          parent: user.parent || '',
         })
       } catch (error) {
         notifyError(error, 'Failed to load user')
@@ -85,21 +81,18 @@ const UserForm = () => {
     try {
       if (isEdit && id) {
         const payload: UpdateUserRequest = {
-          username: values.username,
           qcid: values.qcid,
-          name: values.name,
           role: values.role,
-          ...(values.password ? { password: values.password } : {}),
+          parent: values.parent,
         }
         await userApi.update(Number(id), payload)
         notifySuccess('User updated')
       } else {
         const payload: CreateUserRequest = {
           username: values.username,
-          password: values.password || '',
           qcid: values.qcid,
-          name: values.name,
           role: values.role,
+          parent: values.parent,
         }
         await userApi.create(payload)
         notifySuccess('User created')
@@ -127,6 +120,10 @@ const UserForm = () => {
       >
 
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+          <Form.Item label="QCID" validateStatus={errors.qcid ? 'error' : ''} help={errors.qcid?.message}>
+            <Controller name="qcid" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
+
           <Form.Item
             label="Username"
             validateStatus={errors.username ? 'error' : ''}
@@ -139,26 +136,8 @@ const UserForm = () => {
             />
           </Form.Item>
 
-          <Form.Item label="Password" validateStatus={errors.password ? 'error' : ''} help={errors.password?.message}>
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <Input.Password
-                  {...field}
-                  autoComplete="new-password"
-                  placeholder={isEdit ? 'Leave blank to keep current password' : 'Enter password'}
-                />
-              )}
-            />
-          </Form.Item>
-
-          <Form.Item label="QCID" validateStatus={errors.qcid ? 'error' : ''} help={errors.qcid?.message}>
-            <Controller name="qcid" control={control} render={({ field }) => <Input {...field} />} />
-          </Form.Item>
-
-          <Form.Item label="Name" validateStatus={errors.name ? 'error' : ''} help={errors.name?.message}>
-            <Controller name="name" control={control} render={({ field }) => <Input {...field} />} />
+          <Form.Item label="Parent" validateStatus={errors.parent ? 'error' : ''} help={errors.parent?.message}>
+            <Controller name="parent" control={control} render={({ field }) => <Input {...field} />} />
           </Form.Item>
 
           <Form.Item label="Role" validateStatus={errors.role ? 'error' : ''} help={errors.role?.message}>

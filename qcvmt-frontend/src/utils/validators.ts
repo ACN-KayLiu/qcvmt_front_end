@@ -13,13 +13,7 @@ export const oddEvenPairSchema = z
 export const vesselSchema = z
   .object({
     vesselId: z.string().min(1),
-    vesselName: z.string().min(1),
-    bayStart: z.number().int().nonnegative(),
-    bayEnd: z.number().int().nonnegative(),
-  })
-  .refine((input) => input.bayStart <= input.bayEnd, {
-    message: 'bayStart must not exceed bayEnd',
-    path: ['bayEnd'],
+    bay: z.string().min(1),
   })
 
 const deckHoldSchema = z.enum(['DECK', 'HOLD'])
@@ -27,140 +21,61 @@ const deckHoldSchema = z.enum(['DECK', 'HOLD'])
 export const vesselFormSchema = z
   .object({
     vesselId: z.string().min(1, 'Vessel ID is required'),
-    vesselName: z.string().min(1, 'Vessel name is required'),
     deckHold: deckHoldSchema,
-    bayStart: z.number().int().nonnegative(),
-    bayEnd: z.number().int().nonnegative(),
-    rowStart: z.number().int().nonnegative(),
-    rowEnd: z.number().int().nonnegative(),
-    tierStart: z.number().int().nonnegative(),
-    tierEnd: z.number().int().nonnegative(),
-  })
-  .superRefine((input, context) => {
-    if (input.bayStart > input.bayEnd) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'bayStart must not exceed bayEnd',
-        path: ['bayEnd'],
-      })
-    }
-
-    if (input.rowStart > input.rowEnd) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'rowStart must not exceed rowEnd',
-        path: ['rowEnd'],
-      })
-    }
-
-    if (input.tierStart > input.tierEnd) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'tierStart must not exceed tierEnd',
-        path: ['tierEnd'],
-      })
-    }
-
-    if (input.rowStart % 2 !== input.rowEnd % 2) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'rowStart and rowEnd must have the same odd-even parity',
-        path: ['rowEnd'],
-      })
-    }
+    bay: z.string().min(1, 'Bay is required'),
+    rowStart: z.string().min(1, 'Row start is required'),
+    rowEnd: z.string().min(1, 'Row end is required'),
+    tierStart: z.string().min(1, 'Tier start is required'),
+    tierEnd: z.string().min(1, 'Tier end is required'),
   })
 
 const roleSchema = z.enum(['qcvmt-admin', 'qcvmt-user', 'qcvmt-limited'])
 
 export const createUserSchema = z.object({
   username: z.string().min(2, 'Username must be at least 2 characters'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
   qcid: z.string().min(1, 'QCID is required'),
-  name: z.string().min(1, 'Name is required'),
-  role: roleSchema,
+  parent: z.string().optional(),
+  role: z.string().min(1, 'Role is required'),
 })
 
 export const updateUserSchema = z.object({
-  username: z.string().min(2, 'Username must be at least 2 characters'),
-  password: z.string().min(6, 'Password must be at least 6 characters').optional().or(z.literal('')),
   qcid: z.string().min(1, 'QCID is required'),
-  name: z.string().min(1, 'Name is required'),
-  role: roleSchema,
+  parent: z.string().optional(),
+  role: z.string().min(1, 'Role is required'),
 })
 
 export const colorSetFormSchema = z.object({
-  boxCase: z.string().min(1, 'Box case is required'),
+  boxcase: z.string().min(1, 'Box case is required'),
   color: z
     .string()
     .regex(/^#([0-9a-fA-F]{6})$/, 'Color must be a valid hex value like #12ABEF'),
-  description: z.string().optional(),
 })
 
 export const vesselColorFormSchema = z
   .object({
     vesselId: z.string().min(1, 'Vessel ID is required'),
-    bayStart: z.number().int().nonnegative(),
-    bayEnd: z.number().int().nonnegative(),
-    rowStart: z.number().int().nonnegative(),
-    rowEnd: z.number().int().nonnegative(),
-    tierStart: z.number().int().nonnegative(),
-    tierEnd: z.number().int().nonnegative(),
-    color: z
-      .string()
-      .regex(/^#([0-9a-fA-F]{6})$/, 'Color must be a valid hex value like #12ABEF'),
-  })
-  .superRefine((input, context) => {
-    if (input.bayStart > input.bayEnd) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'bayStart must not exceed bayEnd',
-        path: ['bayEnd'],
-      })
-    }
-
-    if (input.rowStart > input.rowEnd) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'rowStart must not exceed rowEnd',
-        path: ['rowEnd'],
-      })
-    }
-
-    if (input.tierStart > input.tierEnd) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'tierStart must not exceed tierEnd',
-        path: ['tierEnd'],
-      })
-    }
-
-    if (input.rowStart % 2 !== input.rowEnd % 2) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'rowStart and rowEnd must have the same odd-even parity',
-        path: ['rowEnd'],
-      })
-    }
+    deckHold: z.string().min(1, 'Deck/Hold is required'),
+    bay: z.string().min(1, 'Bay is required'),
+    rowStart: z.string().min(1, 'Row start is required'),
+    rowEnd: z.string().min(1, 'Row end is required'),
+    tierStart: z.string().min(1, 'Tier start is required'),
+    tierEnd: z.string().min(1, 'Tier end is required'),
   })
 
 export const vesselRefuelFormSchema = z.object({
   vesselId: z.string().min(1, 'Vessel ID is required'),
-  isRefuel: z.boolean(),
+  isRefuel: z.enum(['Y', 'N']),
 })
 
 export const bayConfigFormSchema = z
   .object({
-    holdTiers: z.number().int().min(0, 'Hold tiers must be 0 or greater'),
-    deckTiers: z.number().int().min(0, 'Deck tiers must be 0 or greater'),
-  })
-  .superRefine((input, context) => {
-    if (input.deckTiers < input.holdTiers) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Deck tiers should be greater than or equal to hold tiers',
-        path: ['deckTiers'],
-      })
-    }
+    id: z.number().int().nonnegative(),
+    type: z.string().min(1),
+    row: z.string().min(1),
+    tier: z.string().min(1),
+    tierStart: z.string().min(1, 'Tier start is required'),
+    tierEnd: z.string().min(1, 'Tier end is required'),
+    active: z.string().min(1),
   })
 
 export const exportLogsSchema = z

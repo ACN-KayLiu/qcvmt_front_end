@@ -8,7 +8,6 @@ const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'))
 const TerminalLayout = lazy(() => import('@/components/layout/TerminalLayout'))
 const TerminalPage = lazy(() => import('@/pages/terminal/TerminalPage'))
 const LoginPage = lazy(() => import('@/pages/login/LoginPage'))
-const DashboardPage = lazy(() => import('@/pages/admin/DashboardPage'))
 const UserList = lazy(() => import('@/pages/admin/UserList'))
 const UserForm = lazy(() => import('@/pages/admin/UserForm'))
 const UserLogs = lazy(() => import('@/pages/admin/UserLogs'))
@@ -51,7 +50,7 @@ export const router = createBrowserRouter([
           {
             element: withSuspense(AdminLayout),
             children: [
-              { index: true, element: withSuspense(DashboardPage) },
+              { index: true, element: <Navigate to="users" replace /> },
               { path: 'users', element: withSuspense(UserList) },
               { path: 'users/new', element: withSuspense(UserForm) },
               { path: 'users/:id', element: withSuspense(UserForm) },

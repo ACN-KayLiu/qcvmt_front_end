@@ -3,9 +3,7 @@ import type { ApiResponse } from '@/api/types'
 import type { AxiosResponse } from 'axios'
 
 interface ImportResult {
-  total: number
-  success: number
-  failed: number
+  imported: number
 }
 
 interface ExportResult {
@@ -32,12 +30,19 @@ const parseFilenameFromContentDisposition = (value?: string): string | undefined
 }
 
 export const importExportApi = {
-  importVessel: (file: File): Promise<ApiResponse<ImportResult>> => {
+  importVessel: async (file: File): Promise<ApiResponse<ImportResult>> => {
     const formData = new FormData()
     formData.append('file', file)
-    return apiClient.post('/import/vessel', formData, {
+    const response = await apiClient.post('/import/vessel', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    }) as ApiResponse<number>
+
+    return {
+      ...response,
+      data: {
+        imported: response.data,
+      },
+    }
   },
   exportLogs: async (from: string, to: string): Promise<ExportResult> => {
     const response = (await apiClient.get('/export/logs', {

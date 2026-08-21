@@ -12,6 +12,25 @@ export const apiClient = axios.create({
   },
 })
 
+const inFlightGets = new Map<string, Promise<unknown>>()
+
+export const getDeduplicated = <T>(url: string, params?: object): Promise<T> => {
+  const query = Object.entries(params ?? {})
+    .filter(([, value]) => value !== undefined)
+    .sort(([left], [right]) => left.localeCompare(right))
+  const key = `${url}?${JSON.stringify(query)}`
+  const existing = inFlightGets.get(key)
+
+  if (existing) {
+    return existing as Promise<T>
+  }
+
+  const request = apiClient.get(url, { params }) as Promise<T>
+  inFlightGets.set(key, request)
+  void request.finally(() => inFlightGets.delete(key))
+  return request
+}
+
 apiClient.interceptors.request.use(async (config) => {
   const headers = new AxiosHeaders(config.headers)
   const tokens = getStoredAuthTokens()

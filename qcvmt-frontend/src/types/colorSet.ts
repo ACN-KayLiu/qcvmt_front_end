@@ -1,9 +1,9 @@
 export interface ColorSet {
   id: number
-  boxCase: string
+  boxcase: string
   color: string
-  description?: string
+  version?: number
 }
 
-export type CreateColorSetRequest = Omit<ColorSet, 'id'>
-export type UpdateColorSetRequest = Omit<ColorSet, 'id'>
+export type CreateColorSetRequest = Pick<ColorSet, 'boxcase' | 'color'>
+export type UpdateColorSetRequest = Pick<ColorSet, 'color'>

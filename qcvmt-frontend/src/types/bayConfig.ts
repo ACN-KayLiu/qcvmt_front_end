@@ -1,22 +1,28 @@
 export interface BayConfig {
-  holdTiers: number
-  deckTiers: number
+  id: number
+  type: string
+  row: string
+  tier: string
+  tierStart: string
+  tierEnd: string
+  active: string
 }
 
 export interface VesselRefuelItem {
   id: number
   vesselId: string
-  isRefuel: boolean
+  isRefuel: string
+  version?: number
 }
 
 export interface VesselColorItem {
   id: number
   vesselId: string
-  bayStart: number
-  bayEnd: number
-  rowStart: number
-  rowEnd: number
-  tierStart: number
-  tierEnd: number
-  color: string
+  deckHold: string
+  bay: string
+  rowStart: string
+  rowEnd: string
+  tierStart: string
+  tierEnd: string
+  version?: number
 }

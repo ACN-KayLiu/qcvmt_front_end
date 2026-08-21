@@ -2,29 +2,35 @@ export type Role = 'qcvmt-admin' | 'qcvmt-user' | 'qcvmt-limited'
 
 export interface User {
   id: number
+  keycloakId?: string
   username: string
   qcid: string
-  name: string
-  role: Role
+  name?: string
+  role: Role | string
   parent?: string
+  createTime?: string
 }
 
 export interface CreateUserRequest {
   username: string
-  password: string
   qcid: string
-  name: string
-  role: Role
+  role: string
+  parent?: string
 }
 
-export interface UpdateUserRequest extends Omit<CreateUserRequest, 'password'> {
-  password?: string
+export interface UpdateUserRequest {
+  qcid: string
+  role: string
+  parent?: string
 }
 
 export interface OperationLogItem {
   id: number
+  userId: number
+  username: string
   actionType: string
   functionName: string
-  valueChange: string
-  time: string
+  oldValues?: string
+  newValues?: string
+  timestamp: string
 }

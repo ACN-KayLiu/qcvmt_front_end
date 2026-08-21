@@ -57,9 +57,14 @@ const VesselColorList = () => {
     () => [
       { title: 'Vessel ID', dataIndex: 'vesselId', key: 'vesselId' },
       {
+        title: 'Deck/Hold',
+        dataIndex: 'deckHold',
+        key: 'deckHold',
+      },
+      {
         title: 'Bay',
-        key: 'bayRange',
-        render: (_, row) => `${row.bayStart}-${row.bayEnd}`,
+        dataIndex: 'bay',
+        key: 'bay',
       },
       {
         title: 'Row',
@@ -70,27 +75,6 @@ const VesselColorList = () => {
         title: 'Tier',
         key: 'tierRange',
         render: (_, row) => `${row.tierStart}-${row.tierEnd}`,
-      },
-      {
-        title: 'Color',
-        dataIndex: 'color',
-        key: 'color',
-        render: (value: string) => (
-          <Space>
-            <span
-              aria-hidden="true"
-              style={{
-                width: 18,
-                height: 18,
-                borderRadius: 4,
-                border: '1px solid #ddd',
-                backgroundColor: value,
-                display: 'inline-block',
-              }}
-            />
-            <Tag>{value}</Tag>
-          </Space>
-        ),
       },
       {
         title: 'Actions',
@@ -124,7 +108,7 @@ const VesselColorList = () => {
       >
         <PageSearchBar
           ariaLabel="Search vessel colors"
-          placeholder="Search by vessel ID"
+          placeholder="Search by vessel ID / deck-hold / bay"
           value={inputKeyword}
           onChange={setInputKeyword}
           onSearch={handleSearch}

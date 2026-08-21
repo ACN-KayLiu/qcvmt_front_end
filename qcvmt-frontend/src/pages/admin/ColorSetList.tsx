@@ -42,7 +42,7 @@ const ColorSetList = () => {
   const handleDelete = useCallback(
     (colorSet: ColorSet) => {
       showDeleteConfirm({
-        title: `Delete color set ${colorSet.boxCase}?`,
+        title: `Delete color set ${colorSet.boxcase}?`,
         successMessage: 'Color set deleted',
         onDelete: () => colorSetApi.remove(colorSet.id),
         onAfterDelete: fetchColorSets,
@@ -57,8 +57,8 @@ const ColorSetList = () => {
     () => [
       {
         title: 'Box Case',
-        dataIndex: 'boxCase',
-        key: 'boxCase',
+        dataIndex: 'boxcase',
+        key: 'boxcase',
       },
       {
         title: 'Color',
@@ -80,11 +80,6 @@ const ColorSetList = () => {
             <Tag>{value}</Tag>
           </Space>
         ),
-      },
-      {
-        title: 'Description',
-        dataIndex: 'description',
-        key: 'description',
       },
       {
         title: 'Actions',

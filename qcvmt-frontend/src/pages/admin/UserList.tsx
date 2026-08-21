@@ -7,10 +7,10 @@ import { AdminPageCard } from '@/components/common/AdminPageCard'
 import { PageSearchBar } from '@/components/common/PageSearchBar'
 import { useListQuery } from '@/hooks/useListQuery'
 import { usePageMessage } from '@/hooks/usePageMessage'
-import type { User } from '@/types/user'
+import type { Role, User } from '@/types/user'
 import { showDeleteConfirm } from '@/utils/deleteConfirm'
 
-const roleColorMap: Record<User['role'], string> = {
+const roleColorMap: Record<Role, string> = {
   'qcvmt-admin': 'red',
   'qcvmt-user': 'blue',
   'qcvmt-limited': 'gold',
@@ -59,25 +59,25 @@ const UserList = () => {
   const columns: ColumnsType<User> = useMemo(
     () => [
       {
-        title: 'Username',
-        dataIndex: 'username',
-        key: 'username',
-      },
-      {
         title: 'QCID',
-        dataIndex: 'qcid',
+        dataIndex: 'username',
         key: 'qcid',
       },
       {
+        title: 'Username',
+        dataIndex: 'qcid',
+        key: 'username',
+      },
+      {
         title: 'Name',
-        dataIndex: 'name',
-        key: 'name',
+        dataIndex: 'parent',
+        key: 'parent',
       },
       {
         title: 'Role',
         dataIndex: 'role',
         key: 'role',
-        render: (value: User['role']) => <Tag color={roleColorMap[value]}>{value}</Tag>,
+        render: (value: User['role']) => <Tag color={roleColorMap[(value as Role)] || 'default'}>{value}</Tag>,
       },
       {
         title: 'Actions',
@@ -114,7 +114,7 @@ const UserList = () => {
       >
         <PageSearchBar
           ariaLabel="Search users"
-          placeholder="Search by username or name"
+          placeholder="Search by username / qcid / role"
           value={inputKeyword}
           onChange={setInputKeyword}
           onSearch={handleSearch}

@@ -60,12 +60,12 @@ const VesselRefuelList = () => {
         title: 'Status',
         dataIndex: 'isRefuel',
         key: 'isRefuel',
-        render: (value: boolean) => (value ? <Tag color="red">Refuel</Tag> : <Tag color="green">Normal</Tag>),
+        render: (value: string) => (value === 'Y' ? <Tag color="red">Refuel</Tag> : <Tag color="green">Normal</Tag>),
       },
       {
         title: 'Toggle Preview',
         key: 'toggle',
-        render: (_, row) => <Switch checked={row.isRefuel} disabled aria-label={`Refuel switch for ${row.vesselId}`} />,
+        render: (_, row) => <Switch checked={row.isRefuel === 'Y'} disabled aria-label={`Refuel switch for ${row.vesselId}`} />,
       },
       {
         title: 'Actions',

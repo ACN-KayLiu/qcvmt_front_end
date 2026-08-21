@@ -12,6 +12,9 @@ import { vesselRefuelFormSchema } from '@/utils/validators'
 
 type VesselRefuelFormData = Omit<VesselRefuelItem, 'id'>
 
+const toRefuelFlag = (value: boolean): string => (value ? 'Y' : 'N')
+const isRefuelFlag = (value: string): boolean => value === 'Y'
+
 const VesselRefuelForm = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -32,7 +35,7 @@ const VesselRefuelForm = () => {
     resolver,
     defaultValues: {
       vesselId: '',
-      isRefuel: false,
+      isRefuel: 'N',
     },
   })
 
@@ -106,8 +109,8 @@ const VesselRefuelForm = () => {
               control={control}
               render={({ field }) => (
                 <Space>
-                  <Switch checked={field.value} onChange={field.onChange} />
-                  <Typography.Text>{isRefuel ? 'Refuel' : 'Normal'}</Typography.Text>
+                  <Switch checked={isRefuelFlag(field.value)} onChange={(checked) => field.onChange(toRefuelFlag(checked))} />
+                  <Typography.Text>{isRefuelFlag(isRefuel) ? 'Refuel' : 'Normal'}</Typography.Text>
                 </Space>
               )}
             />

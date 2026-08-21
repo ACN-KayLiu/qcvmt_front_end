@@ -61,11 +61,6 @@ const VesselList = () => {
         key: 'vesselId',
       },
       {
-        title: 'Vessel Name',
-        dataIndex: 'vesselName',
-        key: 'vesselName',
-      },
-      {
         title: 'Deck/Hold',
         dataIndex: 'deckHold',
         key: 'deckHold',
@@ -73,8 +68,8 @@ const VesselList = () => {
       },
       {
         title: 'Bay',
-        key: 'bayRange',
-        render: (_, vessel) => `${vessel.bayStart}-${vessel.bayEnd}`,
+        dataIndex: 'bay',
+        key: 'bay',
       },
       {
         title: 'Row',
@@ -118,7 +113,7 @@ const VesselList = () => {
       >
         <PageSearchBar
           ariaLabel="Search vessels"
-          placeholder="Search by vessel ID or vessel name"
+          placeholder="Search by vessel ID / deck-hold / bay"
           value={inputKeyword}
           onChange={setInputKeyword}
           onSearch={handleSearch}

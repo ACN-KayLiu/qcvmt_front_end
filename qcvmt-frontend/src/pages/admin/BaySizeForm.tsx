@@ -23,8 +23,13 @@ const BaySizeForm = () => {
   } = useForm<BayConfig>({
     resolver,
     defaultValues: {
-      holdTiers: 0,
-      deckTiers: 0,
+      id: 0,
+      type: 'HOLD',
+      row: '0',
+      tier: '0',
+      tierStart: '0',
+      tierEnd: '0',
+      active: '1',
     },
   })
 
@@ -67,38 +72,38 @@ const BaySizeForm = () => {
 
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Form.Item
-            label="Hold Tiers"
-            validateStatus={errors.holdTiers ? 'error' : ''}
-            help={errors.holdTiers?.message}
+            label="Tier Start"
+            validateStatus={errors.tierStart ? 'error' : ''}
+            help={errors.tierStart?.message}
           >
             <Controller
-              name="holdTiers"
+              name="tierStart"
               control={control}
               render={({ field }) => (
                 <InputNumber
-                  value={field.value}
+                  value={Number(field.value || 0)}
                   min={0}
-                  onChange={(value) => field.onChange(value ?? 0)}
-                  aria-label="Hold tiers"
+                  onChange={(value) => field.onChange(String(value ?? 0))}
+                  aria-label="Tier start"
                 />
               )}
             />
           </Form.Item>
 
           <Form.Item
-            label="Deck Tiers"
-            validateStatus={errors.deckTiers ? 'error' : ''}
-            help={errors.deckTiers?.message}
+            label="Tier End"
+            validateStatus={errors.tierEnd ? 'error' : ''}
+            help={errors.tierEnd?.message}
           >
             <Controller
-              name="deckTiers"
+              name="tierEnd"
               control={control}
               render={({ field }) => (
                 <InputNumber
-                  value={field.value}
+                  value={Number(field.value || 0)}
                   min={0}
-                  onChange={(value) => field.onChange(value ?? 0)}
-                  aria-label="Deck tiers"
+                  onChange={(value) => field.onChange(String(value ?? 0))}
+                  aria-label="Tier end"
                 />
               )}
             />

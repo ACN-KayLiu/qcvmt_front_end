@@ -5,9 +5,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { vesselColorApi } from '@/api/vesselColor'
 import { AdminPageCard } from '@/components/common/AdminPageCard'
-import { ColorPickerField } from '@/components/common/ColorPickerField'
 import { PageFormActions } from '@/components/common/PageFormActions'
-import { RangeNumberFields } from '@/components/common/RangeNumberFields'
 import { usePageMessage } from '@/hooks/usePageMessage'
 import type { VesselColorItem } from '@/types/bayConfig'
 import { vesselColorFormSchema } from '@/utils/validators'
@@ -33,13 +31,12 @@ const VesselColorForm = () => {
     resolver,
     defaultValues: {
       vesselId: '',
-      bayStart: 0,
-      bayEnd: 0,
-      rowStart: 0,
-      rowEnd: 0,
-      tierStart: 0,
-      tierEnd: 0,
-      color: '#1677ff',
+      deckHold: '',
+      bay: '',
+      rowStart: '',
+      rowEnd: '',
+      tierStart: '',
+      tierEnd: '',
     },
   })
 
@@ -55,13 +52,12 @@ const VesselColorForm = () => {
         const item = response.data
         reset({
           vesselId: item.vesselId,
-          bayStart: item.bayStart,
-          bayEnd: item.bayEnd,
+          deckHold: item.deckHold,
+          bay: item.bay,
           rowStart: item.rowStart,
           rowEnd: item.rowEnd,
           tierStart: item.tierStart,
           tierEnd: item.tierEnd,
-          color: item.color,
         })
       } catch (error) {
         notifyError(error, 'Failed to load vessel color')
@@ -77,7 +73,12 @@ const VesselColorForm = () => {
     setLoading(true)
     try {
       if (isEdit && id) {
-        await vesselColorApi.update(Number(id), values)
+        await vesselColorApi.update(Number(id), {
+          rowStart: values.rowStart,
+          rowEnd: values.rowEnd,
+          tierStart: values.tierStart,
+          tierEnd: values.tierEnd,
+        })
         notifySuccess('Vessel color updated')
       } else {
         await vesselColorApi.create(values)
@@ -113,21 +114,36 @@ const VesselColorForm = () => {
             <Controller name="vesselId" control={control} render={({ field }) => <Input {...field} />} />
           </Form.Item>
 
-          <RangeNumberFields control={control} errors={errors} />
+          <Form.Item label="Deck/Hold" validateStatus={errors.deckHold ? 'error' : ''} help={errors.deckHold?.message}>
+            <Controller name="deckHold" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
 
-          <Form.Item label="Color" validateStatus={errors.color ? 'error' : ''} help={errors.color?.message}>
-            <Controller
-              name="color"
-              control={control}
-              render={({ field }) => (
-                <ColorPickerField
-                  value={field.value}
-                  onChange={field.onChange}
-                  ariaLabel="Pick vessel color"
-                  previewLabel="Vessel color preview"
-                />
-              )}
-            />
+          <Form.Item label="Bay" validateStatus={errors.bay ? 'error' : ''} help={errors.bay?.message}>
+            <Controller name="bay" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
+
+          <Form.Item
+            label="Row Start"
+            validateStatus={errors.rowStart ? 'error' : ''}
+            help={errors.rowStart?.message}
+          >
+            <Controller name="rowStart" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
+
+          <Form.Item label="Row End" validateStatus={errors.rowEnd ? 'error' : ''} help={errors.rowEnd?.message}>
+            <Controller name="rowEnd" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
+
+          <Form.Item
+            label="Tier Start"
+            validateStatus={errors.tierStart ? 'error' : ''}
+            help={errors.tierStart?.message}
+          >
+            <Controller name="tierStart" control={control} render={({ field }) => <Input {...field} />} />
+          </Form.Item>
+
+          <Form.Item label="Tier End" validateStatus={errors.tierEnd ? 'error' : ''} help={errors.tierEnd?.message}>
+            <Controller name="tierEnd" control={control} render={({ field }) => <Input {...field} />} />
           </Form.Item>
 
           <PageFormActions

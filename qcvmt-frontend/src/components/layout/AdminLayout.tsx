@@ -6,7 +6,6 @@ import { AppShellLayout } from '@/components/layout/AppShellLayout'
 type MenuItem = Required<MenuProps>['items'][number]
 
 const navItems: MenuItem[] = [
-  { key: '/admin', label: <Link to="/admin">Dashboard</Link> },
   {
     type: 'group',
     label: 'Data',
@@ -36,8 +35,7 @@ const subKeys = [
 ]
 
 const resolveMenuKey = (pathname: string): string => {
-  if (pathname === '/admin') return '/admin'
-  return subKeys.find((key) => pathname === key || pathname.startsWith(`${key}/`)) || '/admin'
+  return subKeys.find((key) => pathname === key || pathname.startsWith(`${key}/`)) || '/admin/users'
 }
 
 const AdminLayout = () => {
